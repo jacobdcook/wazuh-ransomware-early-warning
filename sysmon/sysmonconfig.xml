@@ -1,0 +1,239 @@
+<!--
+  Riverbend lab Sysmon baseline. Schema 4.90, sha256 hashes.
+  Scoped to EIDs 1, 3, 7, 10, 11, 12, 13, 22 for the Wazuh ransomware pack.
+  Includes: lsass, NTDS, VSS, ransom-note-like files, Run keys, Defender tamper.
+  Excludes: Windows Update, Defender, Sysmon self-noise.
+-->
+<Sysmon schemaversion="4.90">
+  <HashAlgorithms>sha256</HashAlgorithms>
+  <DnsLookup>False</DnsLookup>
+  <EventFiltering>
+
+    <!-- EID 1 ProcessCreate: log command lines; drop WU / Defender / Sysmon. -->
+    <RuleGroup name="ProcessCreate exclude" groupRelation="or">
+      <ProcessCreate onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MpCmdRun.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\SecurityHealthService.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <Image condition="end with">\TiWorker.exe</Image>
+        <Image condition="end with">\MoUsoCoreWorker.exe</Image>
+        <Image condition="end with">\UsoCoreWorker.exe</Image>
+        <Image condition="end with">\WaaSMedicAgent.exe</Image>
+      </ProcessCreate>
+    </RuleGroup>
+
+    <!-- EID 2 FileCreateTime: unused by this pack; do not log. -->
+    <RuleGroup name="FileCreateTime off" groupRelation="or">
+      <FileCreateTime onmatch="include" />
+    </RuleGroup>
+
+    <!-- EID 3 NetworkConnect: script hosts, user-writable images, VSS tools. -->
+    <RuleGroup name="NetworkConnect include" groupRelation="or">
+      <NetworkConnect onmatch="include">
+        <Image condition="end with">\powershell.exe</Image>
+        <Image condition="end with">\pwsh.exe</Image>
+        <Image condition="end with">\powershell_ise.exe</Image>
+        <Image condition="end with">\cmd.exe</Image>
+        <Image condition="end with">\wscript.exe</Image>
+        <Image condition="end with">\cscript.exe</Image>
+        <Image condition="end with">\mshta.exe</Image>
+        <Image condition="end with">\rundll32.exe</Image>
+        <Image condition="end with">\regsvr32.exe</Image>
+        <Image condition="end with">\certutil.exe</Image>
+        <Image condition="end with">\bitsadmin.exe</Image>
+        <Image condition="end with">\curl.exe</Image>
+        <Image condition="end with">\wmic.exe</Image>
+        <Image condition="end with">\vssadmin.exe</Image>
+        <Image condition="contains">\Users\</Image>
+        <Image condition="contains">\Temp\</Image>
+        <Image condition="contains">\AppData\</Image>
+        <Image condition="contains">\ProgramData\</Image>
+      </NetworkConnect>
+    </RuleGroup>
+    <RuleGroup name="NetworkConnect exclude" groupRelation="or">
+      <NetworkConnect onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <Image condition="end with">\TiWorker.exe</Image>
+      </NetworkConnect>
+    </RuleGroup>
+
+    <!-- EID 5 ProcessTerminate: unused; do not log. -->
+    <RuleGroup name="ProcessTerminate off" groupRelation="or">
+      <ProcessTerminate onmatch="include" />
+    </RuleGroup>
+
+    <!-- EID 6 DriverLoad: unused; do not log. -->
+    <RuleGroup name="DriverLoad off" groupRelation="or">
+      <DriverLoad onmatch="include" />
+    </RuleGroup>
+
+    <!-- EID 7 ImageLoad: lsass, VSS/NTDS processes, loads from user-writable paths. -->
+    <RuleGroup name="ImageLoad include" groupRelation="or">
+      <ImageLoad onmatch="include">
+        <Image condition="end with">\lsass.exe</Image>
+        <Image condition="end with">\vssadmin.exe</Image>
+        <Image condition="end with">\vssvc.exe</Image>
+        <Image condition="end with">\ntdsutil.exe</Image>
+        <ImageLoaded condition="contains">\Temp\</ImageLoaded>
+        <ImageLoaded condition="contains">\Users\</ImageLoaded>
+        <ImageLoaded condition="contains">\AppData\</ImageLoaded>
+        <ImageLoaded condition="contains">\ProgramData\</ImageLoaded>
+        <ImageLoaded condition="contains">ntds</ImageLoaded>
+      </ImageLoad>
+    </RuleGroup>
+    <RuleGroup name="ImageLoad exclude" groupRelation="or">
+      <ImageLoad onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <Image condition="end with">\TiWorker.exe</Image>
+      </ImageLoad>
+    </RuleGroup>
+
+    <!-- EID 10 ProcessAccess: lsass dump-style opens, NTDS, VSS service. -->
+    <RuleGroup name="ProcessAccess include" groupRelation="or">
+      <ProcessAccess onmatch="include">
+        <Rule name="LSASS target" groupRelation="and">
+          <TargetImage condition="end with">\lsass.exe</TargetImage>
+        </Rule>
+        <Rule name="NTDS target" groupRelation="or">
+          <TargetImage condition="contains">ntds</TargetImage>
+          <TargetImage condition="end with">\ntdsutil.exe</TargetImage>
+        </Rule>
+        <Rule name="VSS target" groupRelation="or">
+          <TargetImage condition="end with">\vssvc.exe</TargetImage>
+          <TargetImage condition="end with">\vssadmin.exe</TargetImage>
+        </Rule>
+      </ProcessAccess>
+    </RuleGroup>
+    <RuleGroup name="ProcessAccess exclude" groupRelation="or">
+      <ProcessAccess onmatch="exclude">
+        <SourceImage condition="end with">\Sysmon.exe</SourceImage>
+        <SourceImage condition="end with">\Sysmon64.exe</SourceImage>
+        <SourceImage condition="end with">\MsMpEng.exe</SourceImage>
+        <SourceImage condition="end with">\NisSrv.exe</SourceImage>
+        <SourceImage condition="end with">\MsSense.exe</SourceImage>
+        <SourceImage condition="end with">\csrss.exe</SourceImage>
+        <SourceImage condition="end with">\wininit.exe</SourceImage>
+        <GrantedAccess condition="is">0x1400</GrantedAccess>
+      </ProcessAccess>
+    </RuleGroup>
+
+    <!-- EID 11 FileCreate: ransom notes, encrypted suffixes, user docs, VSS/NTDS copies. -->
+    <RuleGroup name="FileCreate include" groupRelation="or">
+      <FileCreate onmatch="include">
+        <TargetFilename condition="end with">\RANSOM_NOTE.txt</TargetFilename>
+        <TargetFilename condition="contains">README_TO_DECRYPT</TargetFilename>
+        <TargetFilename condition="contains">HOW_TO_RECOVER</TargetFilename>
+        <TargetFilename condition="contains">DECRYPT_INSTRUCTIONS</TargetFilename>
+        <TargetFilename condition="end with">.locked</TargetFilename>
+        <TargetFilename condition="end with">.encrypted</TargetFilename>
+        <TargetFilename condition="end with">.crypt</TargetFilename>
+        <TargetFilename condition="end with">.enc</TargetFilename>
+        <TargetFilename condition="end with">\ntds.dit</TargetFilename>
+        <TargetFilename condition="contains">\System Volume Information\</TargetFilename>
+        <TargetFilename condition="contains">\Documents\</TargetFilename>
+        <TargetFilename condition="contains">\Desktop\</TargetFilename>
+        <TargetFilename condition="contains">\Downloads\</TargetFilename>
+        <TargetFilename condition="contains">\Pictures\</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+    <RuleGroup name="FileCreate exclude" groupRelation="or">
+      <FileCreate onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <Image condition="end with">\TiWorker.exe</Image>
+        <TargetFilename condition="begin with">C:\Windows\SoftwareDistribution\</TargetFilename>
+        <TargetFilename condition="begin with">C:\ProgramData\Microsoft\Windows Defender\</TargetFilename>
+      </FileCreate>
+    </RuleGroup>
+
+    <!-- EID 12/13 RegistryEvent: Run/RunOnce, Defender disable, VSS/NTDS-related keys. -->
+    <RuleGroup name="RegistryEvent include" groupRelation="or">
+      <RegistryEvent onmatch="include">
+        <TargetObject condition="contains">\CurrentVersion\Run</TargetObject>
+        <TargetObject condition="contains">\CurrentVersion\RunOnce</TargetObject>
+        <TargetObject condition="contains">\Windows Defender\</TargetObject>
+        <TargetObject condition="contains">\Real-Time Protection\</TargetObject>
+        <TargetObject condition="contains">DisableAntiSpyware</TargetObject>
+        <TargetObject condition="contains">DisableRealtimeMonitoring</TargetObject>
+        <TargetObject condition="contains">\Services\VSS</TargetObject>
+        <TargetObject condition="contains">\Services\NTDS</TargetObject>
+        <TargetObject condition="contains">\Services\Sysmon</TargetObject>
+        <TargetObject condition="contains">\Services\Sysmon64</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+    <RuleGroup name="RegistryEvent exclude" groupRelation="or">
+      <RegistryEvent onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <Image condition="end with">\TiWorker.exe</Image>
+        <TargetObject condition="contains">\WindowsUpdate\</TargetObject>
+        <TargetObject condition="contains">\Windows Defender\Reporting\</TargetObject>
+      </RegistryEvent>
+    </RuleGroup>
+
+    <!-- EID 22 DnsQuery: script hosts and user-writable images; drop Microsoft/WU/Defender. -->
+    <RuleGroup name="DnsQuery include" groupRelation="or">
+      <DnsQuery onmatch="include">
+        <Image condition="end with">\powershell.exe</Image>
+        <Image condition="end with">\pwsh.exe</Image>
+        <Image condition="end with">\cmd.exe</Image>
+        <Image condition="end with">\wscript.exe</Image>
+        <Image condition="end with">\cscript.exe</Image>
+        <Image condition="end with">\mshta.exe</Image>
+        <Image condition="end with">\rundll32.exe</Image>
+        <Image condition="end with">\regsvr32.exe</Image>
+        <Image condition="end with">\certutil.exe</Image>
+        <Image condition="end with">\bitsadmin.exe</Image>
+        <Image condition="end with">\curl.exe</Image>
+        <Image condition="contains">\Users\</Image>
+        <Image condition="contains">\Temp\</Image>
+        <Image condition="contains">\AppData\</Image>
+      </DnsQuery>
+    </RuleGroup>
+    <RuleGroup name="DnsQuery exclude" groupRelation="or">
+      <DnsQuery onmatch="exclude">
+        <Image condition="end with">\Sysmon.exe</Image>
+        <Image condition="end with">\Sysmon64.exe</Image>
+        <Image condition="end with">\MsMpEng.exe</Image>
+        <Image condition="end with">\NisSrv.exe</Image>
+        <Image condition="end with">\MsSense.exe</Image>
+        <Image condition="end with">\wuauclt.exe</Image>
+        <Image condition="end with">\UsoClient.exe</Image>
+        <QueryName condition="end with">.microsoft.com</QueryName>
+        <QueryName condition="end with">.windowsupdate.com</QueryName>
+        <QueryName condition="end with">.windows.com</QueryName>
+        <QueryName condition="end with">.microsoft.com.akadns.net</QueryName>
+        <QueryName condition="end with">.wd.microsoft.com</QueryName>
+      </DnsQuery>
+    </RuleGroup>
+
+  </EventFiltering>
+</Sysmon>
