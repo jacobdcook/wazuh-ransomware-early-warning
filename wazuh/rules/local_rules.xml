@@ -1,0 +1,65 @@
+<!--
+  Riverbend lab custom rules (SEV-1 plus mass-write support).
+  Install: copy to /var/ossec/etc/rules/local_rules.xml
+  then systemctl restart wazuh-manager.
+-->
+<group name="ransomware,windows,">
+
+  <!-- Misses: direct-syscall dumpers and MiniDumpWriteDump from a trusted signed process; access masks outside 0x1010/0x1038/0x1fffff/0x143a -->
+  <rule id="100100" level="14">
+    <if_sid>61612</if_sid>
+    <field name="win.eventdata.targetImage" type="pcre2">(?i)\\lsass\.exe$</field>
+    <field name="win.eventdata.grantedAccess" type="pcre2">(?i)0x0*(1010|1038|1fffff|143a)(?![0-9a-f])</field>
+    <description>LSASS memory access (T1003.001 OS Credential Dumping)</description>
+    <mitre>
+      <id>T1003.001</id>
+    </mitre>
+    <group>ransomware,sev1,</group>
+  </rule>
+
+  <!-- Misses: Get-WmiObject Win32_ShadowCopy | Remove-WmiObject and CIM equivalents until a later matcher; renamed vssadmin/wmic; diskshadow -->
+  <rule id="100101" level="14">
+    <if_sid>61603</if_sid>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:vssadmin(?:\.exe)?"?\s+delete\s+shadows|wmic(?:\.exe)?"?\s+shadowcopy\s+delete|vssadmin(?:\.exe)?"?\s+resize\s+shadowstorage|bcdedit(?:\.exe)?"?\s+/set\s+\{default\}\s+recoveryenabled\s+no|wbadmin(?:\.exe)?"?\s+delete\s+catalog)</field>
+    <description>Shadow copy deletion (T1490 Inhibit System Recovery)</description>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+    <group>ransomware,sev1,</group>
+  </rule>
+
+  <!-- Misses: encryption that keeps original filenames and extensions; ransom notes with custom names not in the listed set -->
+  <rule id="100102" level="15">
+    <if_sid>61613</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)(RANSOM_NOTE\.txt|README_TO_DECRYPT|HOW_TO_RECOVER|DECRYPT_INSTRUCTIONS|\.(locked|encrypted|crypt|enc)$)</field>
+    <description>Ransom note or encryption artifact written (T1486 Data Encrypted for Impact)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>ransomware,sev1,</group>
+  </rule>
+
+  <!-- Misses: writes outside Desktop/Documents/Downloads/Pictures under Users (AppData, Temp, ProgramData, network shares) -->
+  <rule id="100120" level="3">
+    <if_sid>61613</if_sid>
+    <field name="win.eventdata.targetFilename" type="pcre2">(?i)\\Users\\[^\\]+\\(Desktop|Documents|Downloads|Pictures)\\</field>
+    <description>File write to a user document path (support for mass-write burst)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>ransomware,</group>
+  </rule>
+
+  <!-- Misses: encryption slower than 30 file creates per 60 seconds, or bursts whose paths never match 100120 -->
+  <rule id="100121" level="15" frequency="30" timeframe="60">
+    <if_matched_sid>100120</if_matched_sid>
+    <same_field>win.system.computer</same_field>
+    <field name="win.system.computer" type="pcre2">.+</field>
+    <description>Mass file write burst (T1486 Data Encrypted for Impact)</description>
+    <mitre>
+      <id>T1486</id>
+    </mitre>
+    <group>ransomware,sev1,</group>
+  </rule>
+
+</group>
