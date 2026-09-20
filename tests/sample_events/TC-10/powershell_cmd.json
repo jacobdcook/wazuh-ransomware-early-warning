@@ -1,0 +1,38 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "serviceName": "PSWrap",
+        "imagePath": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -NoProfile -File C:\\ProgramData\\wrap.ps1",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100107
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "serviceName": "CmdWrap",
+        "imagePath": "C:\\Windows\\System32\\cmd.exe /c C:\\ProgramData\\run.bat",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100107
+    }
+  }
+]

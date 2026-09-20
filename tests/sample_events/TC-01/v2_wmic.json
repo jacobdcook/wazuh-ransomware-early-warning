@@ -1,0 +1,59 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\wbem\\wmic.exe",
+        "commandLine": "wmic.exe shadowcopy delete",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\wbadmin.exe",
+        "commandLine": "wbadmin.exe delete catalog -quiet",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\bcdedit.exe",
+        "commandLine": "bcdedit.exe /set {default} recoveryenabled no",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  }
+]

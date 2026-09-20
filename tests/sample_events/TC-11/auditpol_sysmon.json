@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\auditpol.exe",
+        "commandLine": "auditpol.exe /clear /y",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100108
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -Command Stop-Service -Name Sysmon",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100108
+    }
+  }
+]

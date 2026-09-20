@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\schtasks.exe",
+        "commandLine": "schtasks.exe /create /sc minute /mo 5 /tn \"Updater\" /tr \"C:\\Users\\jdoe\\AppData\\Local\\Temp\\sync.ps1\"",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100106
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\schtasks.exe",
+        "commandLine": "schtasks /create /sc hourly /tn \"UserJob\" /tr \"C:\\Users\\jdoe\\Documents\\job.bat\"",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100106
+    }
+  }
+]

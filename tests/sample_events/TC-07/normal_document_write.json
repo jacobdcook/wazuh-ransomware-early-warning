@@ -1,0 +1,20 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "11",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Program Files\\Microsoft Office\\root\\Office16\\WINWORD.EXE",
+        "targetFilename": "C:\\Users\\jdoe\\Documents\\quarterly-notes.docx",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]

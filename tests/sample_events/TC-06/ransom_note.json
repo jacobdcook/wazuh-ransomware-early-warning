@@ -1,0 +1,38 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "11",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Users\\jdoe\\AppData\\Local\\Temp\\locker.exe",
+        "targetFilename": "C:\\Users\\jdoe\\Desktop\\RANSOM_NOTE.txt",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100102
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "11",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Users\\jdoe\\AppData\\Local\\Temp\\locker.exe",
+        "targetFilename": "C:\\Users\\jdoe\\Documents\\README_TO_DECRYPT.txt",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100102
+    }
+  }
+]

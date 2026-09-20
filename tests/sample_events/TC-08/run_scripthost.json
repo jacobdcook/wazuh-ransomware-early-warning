@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "13",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\reg.exe",
+        "targetObject": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\Helper",
+        "details": "wscript.exe C:\\ProgramData\\helper.vbs",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100105
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "13",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "targetObject": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\PSKeep",
+        "details": "powershell.exe -File C:\\ProgramData\\keep.ps1",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100105
+    }
+  }
+]

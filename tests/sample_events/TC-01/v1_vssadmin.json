@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\vssadmin.exe",
+        "commandLine": "vssadmin.exe delete shadows /all /quiet",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\vssadmin.exe",
+        "commandLine": "vssadmin resize shadowstorage /for=C: /on=C: /maxsize=401MB",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  }
+]

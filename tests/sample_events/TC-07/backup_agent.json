@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\vssadmin.exe",
+        "commandLine": "vssadmin list shadows",
+        "parentImage": "C:\\Program Files\\RiverbendBackup\\agent.exe",
+        "user": "RIVERBEND\\svc_backup"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\wbadmin.exe",
+        "commandLine": "wbadmin start backup -backupTarget:E: -include:C: -quiet",
+        "parentImage": "C:\\Program Files\\RiverbendBackup\\agent.exe",
+        "user": "RIVERBEND\\svc_backup"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]

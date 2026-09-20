@@ -1,0 +1,42 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "10",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-DC-01"
+      },
+      "eventdata": {
+        "image": "C:\\Users\\jdoe\\AppData\\Local\\Temp\\out.exe",
+        "targetImage": "C:\\Windows\\System32\\lsass.exe",
+        "grantedAccess": "0x1fffff",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100100
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "10",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-DC-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\rundll32.exe",
+        "targetImage": "C:\\Windows\\System32\\lsass.exe",
+        "grantedAccess": "0x143a",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100100
+    }
+  }
+]

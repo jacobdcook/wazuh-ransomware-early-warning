@@ -1,0 +1,41 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "13",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\reg.exe",
+        "targetObject": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run\\Updater",
+        "details": "C:\\Users\\jdoe\\AppData\\Local\\Temp\\update.exe",
+        "commandLine": "reg.exe add HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v Updater /d C:\\Users\\jdoe\\AppData\\Local\\Temp\\update.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100105
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "13",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\reg.exe",
+        "targetObject": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\RunOnce\\Setup",
+        "details": "C:\\Users\\jdoe\\AppData\\Roaming\\setup.ps1",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100105
+    }
+  }
+]

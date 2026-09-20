@@ -1,0 +1,38 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "serviceName": "PSEXESVC",
+        "imagePath": "%SystemRoot%\\PSEXESVC.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100104
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "serviceName": "PSEXESVC",
+        "imagePath": "\\\\SRV-FILE-01\\ADMIN$\\PSEXESVC.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100104
+    }
+  }
+]

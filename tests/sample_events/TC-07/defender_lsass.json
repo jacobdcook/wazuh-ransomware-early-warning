@@ -1,0 +1,21 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "10",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\ProgramData\\Microsoft\\Windows Defender\\Platform\\4.18.0\\MsMpEng.exe",
+        "targetImage": "C:\\Windows\\System32\\lsass.exe",
+        "grantedAccess": "0x1400",
+        "user": "NT AUTHORITY\\SYSTEM"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]

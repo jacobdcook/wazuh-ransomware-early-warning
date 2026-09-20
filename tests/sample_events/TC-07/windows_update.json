@@ -1,0 +1,59 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\wuauclt.exe",
+        "commandLine": "C:\\Windows\\System32\\wuauclt.exe /RunNow",
+        "parentImage": "C:\\Windows\\System32\\svchost.exe",
+        "user": "NT AUTHORITY\\SYSTEM"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\usoclient.exe",
+        "commandLine": "C:\\Windows\\System32\\usoclient.exe StartScan",
+        "parentImage": "C:\\Windows\\System32\\svchost.exe",
+        "user": "NT AUTHORITY\\SYSTEM"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\WinSxS\\TiWorker.exe",
+        "commandLine": "C:\\Windows\\WinSxS\\TiWorker.exe",
+        "parentImage": "C:\\Windows\\System32\\svchost.exe",
+        "user": "NT AUTHORITY\\SYSTEM"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "10",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-DC-01"
+      },
+      "eventdata": {
+        "image": "C:\\Users\\jdoe\\Tools\\procdump.exe",
+        "targetImage": "C:\\Windows\\System32\\lsass.exe",
+        "grantedAccess": "0x1010",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100100
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "10",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-DC-01"
+      },
+      "eventdata": {
+        "image": "C:\\Users\\jdoe\\Tools\\procdump.exe",
+        "targetImage": "C:\\Windows\\System32\\lsass.exe",
+        "grantedAccess": "0x1038",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100100
+    }
+  }
+]

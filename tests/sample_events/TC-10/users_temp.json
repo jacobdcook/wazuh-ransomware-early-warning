@@ -1,0 +1,38 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "serviceName": "UserSvc",
+        "imagePath": "C:\\Users\\jdoe\\AppData\\Local\\Temp\\svc.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100107
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "serviceName": "RoamSvc",
+        "imagePath": "C:\\Users\\jdoe\\AppData\\Roaming\\svc.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100107
+    }
+  }
+]

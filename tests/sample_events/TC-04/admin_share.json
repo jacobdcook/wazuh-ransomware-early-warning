@@ -1,0 +1,38 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "5140",
+        "providerName": "Microsoft-Windows-Security-Auditing",
+        "channel": "Security",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "shareName": "\\\\*\\ADMIN$",
+        "ipAddress": "10.0.12.55",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100103
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "5140",
+        "providerName": "Microsoft-Windows-Security-Auditing",
+        "channel": "Security",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "shareName": "\\\\*\\C$",
+        "ipAddress": "10.0.12.55",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100103
+    }
+  }
+]

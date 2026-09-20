@@ -1,0 +1,40 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -File C:\\Program Files\\RMM\\health.ps1",
+        "parentImage": "C:\\Program Files\\RMM\\rmm-host.exe",
+        "user": "RIVERBEND\\rmm_agent"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -ExecutionPolicy Bypass -File C:\\Program Files\\RMM\\inventory.ps1",
+        "parentImage": "C:\\Program Files\\RMM\\rmm-host.exe",
+        "user": "RIVERBEND\\rmm_agent"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]

@@ -1,0 +1,20 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "7045",
+        "providerName": "Service Control Manager",
+        "channel": "System",
+        "computer": "WS-OPS-07"
+      },
+      "eventdata": {
+        "serviceName": "RiverbendDeploy",
+        "imagePath": "C:\\Program Files\\Deploy\\pkg.exe",
+        "user": "NT AUTHORITY\\SYSTEM"
+      }
+    },
+    "expect": {
+      "rule_id": null
+    }
+  }
+]
