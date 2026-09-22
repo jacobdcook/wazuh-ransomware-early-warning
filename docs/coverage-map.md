@@ -68,3 +68,11 @@ Confirm every parent ID with `/var/ossec/bin/wazuh-logtest` on the Wazuh version
 - **100109** misses `.NET EventLog.Clear` from a compiled binary, `wevtutil` with unusual quoting or a copied binary name, and Security 1100 (event log service shutdown).
 - **100110** misses obfuscation that never uses `-enc` / `-EncodedCommand` / `FromBase64String` / `-w hidden` / `-nop -ep bypass` (token splitting, GZip+IEX, many Invoke-Obfuscation variants). Script blocks that never land in 4104 with those markers are silent.
 - **100111** misses `Invoke-RestMethod`, browser-driven downloads, `certutil -decode` of a local file, and split-process transfers (download in one PID, write in another).
+
+## Active response
+
+Host isolation is a local Windows firewall action, not a Wazuh manager-side drop. It is bound only to level 15: rule `100102` (ransom note / encryption artifact, Sysmon EID 11) and support rule `100121` (30 user-document writes in 60 seconds on the same `win.system.computer`). Config lives in `wazuh/active-response/ar-config.snippet.xml`: command `isolate-host`, `<location>local</location>`, `<rules_id>100102,100121</rules_id>`, `<timeout_allowed>no</timeout_allowed>`. There is no `<timeout>`. Rollback is manual.
+
+On fire, `isolate-host.cmd` reads the Wazuh 4.x AR JSON from stdin, extracts `parameters.alert.rule.id`, and launches `isolate-host.ps1` with `-ExecutionPolicy Bypass`. The script creates firewall group `RansomwareIsolation`, disables other enabled rules, sets every profile default to Block/Block, and leaves two holes: the manager IPv4 on TCP 1514/1515, and the management CIDR on inbound TCP 3389/5985. Marker: `C:\ProgramData\ossec-agent\isolation.json` (UTC timestamp + triggering rule id). Log: `active-responses.log`.
+
+What it misses: process-level or IPsec isolation (the host still runs); traffic that is not TCP or that uses ports other than 1514/1515/3389/5985; a second isolate while the marker exists (idempotent no-op, by design, so the rollback snapshot is not overwritten). Blast radius: DNS, SMB, AD, and everything else dies until `isolate-host.ps1 -Rollback`. Wrong `ManagerIp` / `MgmtCidr` in `<extra_args>` can leave the host reachable only from a hypervisor console. Test with `/var/ossec/bin/agent_control -b AGENT_IP -f isolate-host0` on a VM before pointing it at a shared lab endpoint.

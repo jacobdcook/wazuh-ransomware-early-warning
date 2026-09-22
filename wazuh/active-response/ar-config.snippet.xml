@@ -1,0 +1,21 @@
+<!--
+  Paste <command> and <active-response> into the manager /var/ossec/etc/ossec.conf
+  inside the existing <ossec_config> (do not nest a second root). Replace the
+  extra_args IPs with the lab manager address and the subnet that may RDP/WinRM
+  to an isolated host. Then: systemctl restart wazuh-manager
+  No <timeout>: rollback is manual (isolate-host.ps1 -Rollback).
+-->
+<ossec_config>
+  <command>
+    <name>isolate-host</name>
+    <executable>isolate-host.cmd</executable>
+    <extra_args>-ManagerIp 192.0.2.10 -MgmtCidr 192.0.2.0/24</extra_args>
+    <timeout_allowed>no</timeout_allowed>
+  </command>
+
+  <active-response>
+    <command>isolate-host</command>
+    <location>local</location>
+    <rules_id>100102,100121</rules_id>
+  </active-response>
+</ossec_config>
