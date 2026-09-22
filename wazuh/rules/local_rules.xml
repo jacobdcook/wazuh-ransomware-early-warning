@@ -17,11 +17,22 @@
     <group>ransomware,sev1,</group>
   </rule>
 
-  <!-- Misses: Get-WmiObject Win32_ShadowCopy | Remove-WmiObject and CIM equivalents until a later matcher; renamed vssadmin/wmic; diskshadow -->
+  <!-- Misses: renamed vssadmin/wmic; diskshadow.exe; compiled WMI callers that never log these cmdlet strings or Delete() -->
   <rule id="100101" level="14">
     <if_sid>61603</if_sid>
-    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:vssadmin(?:\.exe)?"?\s+delete\s+shadows|wmic(?:\.exe)?"?\s+shadowcopy\s+delete|vssadmin(?:\.exe)?"?\s+resize\s+shadowstorage|bcdedit(?:\.exe)?"?\s+/set\s+\{default\}\s+recoveryenabled\s+no|wbadmin(?:\.exe)?"?\s+delete\s+catalog)</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?i)(?:vssadmin(?:\.exe)?"?\s+delete\s+shadows|wmic(?:\.exe)?"?\s+shadowcopy\s+delete|vssadmin(?:\.exe)?"?\s+resize\s+shadowstorage|bcdedit(?:\.exe)?"?\s+/set\s+\{default\}\s+recoveryenabled\s+no|wbadmin(?:\.exe)?"?\s+delete\s+catalog|Get-WmiObject\s+(?:-Class\s+)?Win32_ShadowCopy\s*\|\s*Remove-WmiObject|Get-CimInstance\s+(?:-Class(?:Name)?\s+)?Win32_ShadowCopy\s*\|\s*Remove-CimInstance|Win32_ShadowCopy[\s\S]{0,120}Delete\(\))</field>
     <description>Shadow copy deletion (T1490 Inhibit System Recovery)</description>
+    <mitre>
+      <id>T1490</id>
+    </mitre>
+    <group>ransomware,sev1,</group>
+  </rule>
+
+  <!-- Sibling of 100101 for PowerShell/Operational 4104. Misses: the same renamed-binary and compiled-WMI cases as 100101 -->
+  <rule id="100122" level="14">
+    <if_group>windows_powershell</if_group>
+    <field name="win.eventdata.scriptBlockText" type="pcre2">(?i)(?:Get-WmiObject\s+(?:-Class\s+)?Win32_ShadowCopy\s*\|\s*Remove-WmiObject|Get-CimInstance\s+(?:-Class(?:Name)?\s+)?Win32_ShadowCopy\s*\|\s*Remove-CimInstance|Win32_ShadowCopy[\s\S]{0,120}Delete\(\))</field>
+    <description>Shadow copy deletion via PowerShell WMI/CIM (T1490 Inhibit System Recovery)</description>
     <mitre>
       <id>T1490</id>
     </mitre>

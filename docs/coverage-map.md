@@ -7,7 +7,7 @@ Twelve primary Wazuh rules for ransomware early warning on a small Windows fleet
 | Rule ID | Technique | Name | SEV | Level | Source events (Wazuh parent) | Test case |
 |---|---|---|---|---|---|---|
 | 100100 | [T1003.001](https://attack.mitre.org/techniques/T1003/001/) | LSASS memory access | SEV-1 | 14 | Sysmon EID 10 (`61612`): `TargetImage` `\lsass.exe`, `GrantedAccess` `0x1010`, `0x1038`, `0x1fffff`, `0x143a` | TC-03 |
-| 100101 | [T1490](https://attack.mitre.org/techniques/T1490/) | Shadow copy deletion | SEV-1 | 14 | Sysmon EID 1 (`61603`): `vssadmin delete shadows`, `wmic shadowcopy delete`, `vssadmin resize shadowstorage`, `bcdedit /set {default} recoveryenabled no`, `wbadmin delete catalog` | TC-01 v1, v2 |
+| 100101 | [T1490](https://attack.mitre.org/techniques/T1490/) | Shadow copy deletion | SEV-1 | 14 | Sysmon EID 1 (`61603`): `vssadmin delete shadows`, `wmic shadowcopy delete`, `vssadmin resize shadowstorage`, `bcdedit /set {default} recoveryenabled no`, `wbadmin delete catalog`, plus PowerShell `Get-WmiObject`/`Get-CimInstance` `Win32_ShadowCopy` removal and `Delete()`. Sibling `100122` covers PowerShell 4104 `scriptBlockText` (`windows_powershell`) | TC-01 v1, v2, v3 |
 | 100102 | [T1486](https://attack.mitre.org/techniques/T1486/) | Ransom note / encryption artifact written | SEV-1 | 15 (active response) | Sysmon EID 11 (`61613`): `TargetFilename` matching ransom-note names or double extensions (`.locked`, `.encrypted`, `.crypt`, `.enc`, `RANSOM_NOTE.txt`, `README_TO_DECRYPT`, `HOW_TO_RECOVER`, `DECRYPT_INSTRUCTIONS`) | TC-06 |
 | 100103 | [T1021.002](https://attack.mitre.org/techniques/T1021/002/) | SMB admin-share lateral movement | SEV-2 | 12 | Security 5140 (`60100` parent, `providerName` `Microsoft-Windows-Security-Auditing`): `ShareName` `\\*\ADMIN$` or `\\*\C$` from a non-loopback `IpAddress` | TC-04 |
 | 100104 | [T1569.002](https://attack.mitre.org/techniques/T1569/002/) | PsExec-style remote service execution | SEV-2 | 12 | System 7045 (`60001` parent, `providerName` `Service Control Manager`): `ServiceName` `PSEXESVC` or `ImagePath` `%SystemRoot%\PSEXESVC.exe` or an `ImagePath` under `\\ADMIN$\` | TC-04 |
@@ -57,7 +57,7 @@ Confirm every parent ID with `/var/ossec/bin/wazuh-logtest` on the Wazuh version
 ## What each rule misses
 
 - **100100** misses direct-syscall dumpers and `MiniDumpWriteDump` called from a trusted signed process. Access masks outside `0x1010` / `0x1038` / `0x1fffff` / `0x143a` (including some `PROCESS_QUERY_INFORMATION`-only opens) also slip through.
-- **100101** misses `Get-WmiObject Win32_ShadowCopy | Remove-WmiObject` and the CIM equivalent until a later task extends the matcher. Renamed copies of `vssadmin`/`wmic` and `diskshadow` are also out of scope.
+- **100101** (and sibling **100122** on 4104) miss renamed copies of `vssadmin`/`wmic`, `diskshadow.exe`, and compiled WMI callers that never log the watched cmdlet strings or `Delete()`. Query-only `Get-WmiObject Win32_ShadowCopy` without `Remove-*`/`Delete()` is out of scope on purpose.
 - **100102** misses encryption that keeps original filenames and extensions. Notes written under custom names (`.html`, `.hta`, operator-chosen filenames) that are not in the list will not fire.
 - **100103** ignores loopback `IpAddress` on purpose. It does not see IPC$-only traffic, 5145-only share access, or admin-share use that never logs 5140 under the host's audit policy.
 - **100104** misses renamed PsExec service names, Impacket `smbexec`/`wmiexec` that never drop `PSEXESVC`, and cousins such as PAExec or CSExec.

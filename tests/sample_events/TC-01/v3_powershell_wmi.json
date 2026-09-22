@@ -1,0 +1,110 @@
+[
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -NoProfile -Command \"Get-WmiObject Win32_ShadowCopy | Remove-WmiObject\"",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -NoProfile -Command \"Get-CimInstance Win32_ShadowCopy | Remove-CimInstance\"",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "1",
+        "providerName": "Microsoft-Windows-Sysmon",
+        "channel": "Microsoft-Windows-Sysmon/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "image": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+        "commandLine": "powershell.exe -NoProfile -Command \"(Get-WmiObject Win32_ShadowCopy).Delete()\"",
+        "parentImage": "C:\\Windows\\System32\\cmd.exe",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100101
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "4104",
+        "providerName": "Microsoft-Windows-PowerShell",
+        "channel": "Microsoft-Windows-PowerShell/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "scriptBlockText": "Get-WmiObject Win32_ShadowCopy | Remove-WmiObject",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100122
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "4104",
+        "providerName": "Microsoft-Windows-PowerShell",
+        "channel": "Microsoft-Windows-PowerShell/Operational",
+        "computer": "SRV-FILE-01"
+      },
+      "eventdata": {
+        "scriptBlockText": "Get-CimInstance Win32_ShadowCopy | Remove-CimInstance",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100122
+    }
+  },
+  {
+    "win": {
+      "system": {
+        "eventID": "4104",
+        "providerName": "Microsoft-Windows-PowerShell",
+        "channel": "Microsoft-Windows-PowerShell/Operational",
+        "computer": "WS-FIN-02"
+      },
+      "eventdata": {
+        "scriptBlockText": "Get-WmiObject -Class Win32_ShadowCopy | ForEach-Object { $_.Delete() }",
+        "user": "RIVERBEND\\jdoe"
+      }
+    },
+    "expect": {
+      "rule_id": 100122
+    }
+  }
+]

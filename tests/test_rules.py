@@ -1,6 +1,15 @@
 import re
 
-from tests.rule_engine import evaluate, evaluate_frequency, match
+from tests.rule_engine import evaluate, evaluate_frequency, get_field, match
+
+# Frozen copy of 100101 commandLine before the PowerShell WMI/CIM extension.
+LEGACY_100101_CMDLINE = (
+    r'(?i)(?:vssadmin(?:\.exe)?"?\s+delete\s+shadows|'
+    r'wmic(?:\.exe)?"?\s+shadowcopy\s+delete|'
+    r'vssadmin(?:\.exe)?"?\s+resize\s+shadowstorage|'
+    r'bcdedit(?:\.exe)?"?\s+/set\s+\{default\}\s+recoveryenabled\s+no|'
+    r'wbadmin(?:\.exe)?"?\s+delete\s+catalog)'
+)
 
 PRIMARY_IDS = list(range(100100, 100112))
 SEV_FOR_LEVEL = {14: "sev1", 15: "sev1", 12: "sev2", 13: "sev2", 10: "sev3", 11: "sev3"}
@@ -131,3 +140,24 @@ def test_frequency_same_field_grouping(rules):
     split += [write_event("WS-OPS-07", i) for i in range(15)]
     ids_split = {r.id for r in evaluate_frequency(split, rules)}
     assert burst.id not in ids_split
+
+
+def test_tc01_v3_powershell_wmi_missed_by_legacy_regex(rules, sample_events_by_tc):
+    v3 = [e for e in sample_events_by_tc["TC-01"] if e.get("_file") == "v3_powershell_wmi.json"]
+    assert len(v3) >= 2
+    legacy = re.compile(LEGACY_100101_CMDLINE)
+    current = next(r for r in rules if r.id == 100101)
+    sibling = next(r for r in rules if r.id == 100122)
+    assert sibling.if_group == "windows_powershell"
+    for event in v3:
+        haystack = get_field(event, "win.eventdata.commandLine") or get_field(
+            event, "win.eventdata.scriptBlockText"
+        )
+        assert haystack
+        assert legacy.search(str(haystack)) is None
+        hit = evaluate(event, rules)
+        assert hit is not None, "v3 sample must fire after the WMI/CIM extension"
+        assert hit.id in (100101, 100122)
+        expected = event.get("expect", {}).get("rule_id")
+        assert hit.id == expected
+        assert match(current, event) or match(sibling, event)

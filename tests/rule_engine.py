@@ -117,7 +117,14 @@ def match(rule: Rule, event: dict) -> bool:
 
 def evaluate(event: dict, rules: list[Rule] | None = None) -> Rule | None:
     rules = rules if rules is not None else parse_rules()
-    hits = [r for r in rules if PRIMARY_LO <= r.id <= PRIMARY_HI and match(r, event)]
+    hits = [
+        r
+        for r in rules
+        if match(r, event)
+        and not r.if_matched_sid
+        and r.level >= 10
+        and (PRIMARY_LO <= r.id <= PRIMARY_HI or 100120 <= r.id <= 100129)
+    ]
     return max(hits, key=lambda r: (r.level, r.id)) if hits else None
 
 
