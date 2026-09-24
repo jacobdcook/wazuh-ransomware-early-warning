@@ -1,0 +1,16 @@
+id: TC-06
+name: Encryption-behavior simulator
+technique: T1486
+atomic_ref: custom simulator
+command: 'python encrypt_sim.py --target C:\lab\simulator_sandbox --files 50'
+expected_rule_ids:
+  - 100102
+expected_level: 15
+cleanup: 'python encrypt_sim.py --target C:\lab\simulator_sandbox --rollback'
+notes: >
+  Bundled simulator, not Atomic T1486. Creates RANSOM_NOTE.txt and *.locked
+  (Sysmon EID 11) so 100102 fires at level 15 and starts isolate-host.
+  Fifty user-path writes in one burst can also raise support rule 100121
+  (level 15, same AR). Target must be an empty sandbox; see
+  simulator/README.md. After isolation, run isolate-host.ps1 -Rollback
+  separately. Matches sample_events/TC-06.

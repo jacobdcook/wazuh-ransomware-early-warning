@@ -1,0 +1,15 @@
+id: TC-09
+name: Scheduled task creation
+technique: T1053.005
+atomic_ref: atomics/T1053.005 test 1
+command: 'schtasks.exe /create /sc minute /mo 5 /tn Updater /tr C:\Users\jdoe\AppData\Local\Temp\sync.ps1'
+expected_rule_ids:
+  - 100106
+expected_level: 12
+cleanup: 'schtasks.exe /delete /tn Updater /f'
+notes: >
+  Atomic T1053.005 test 1 uses schtasks /create /sc onlogon /tr
+  "cmd.exe /c calc.exe" (also matches). Lab one-liner uses /sc plus a
+  \Users\ action so it lines up with sample_events/TC-09. Test 4
+  (Register-ScheduledTask) does not hit 100106 unless schtasks /create /sc
+  is also on the command line.

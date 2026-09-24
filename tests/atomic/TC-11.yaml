@@ -1,0 +1,15 @@
+id: TC-11
+name: Defender or logging disabled
+technique: T1562.001
+atomic_ref: atomics/T1562.001 test 19
+command: 'powershell.exe -Command Set-MpPreference -DisableRealtimeMonitoring $true'
+expected_rule_ids:
+  - 100108
+expected_level: 13
+cleanup: 'powershell.exe -Command Set-MpPreference -DisableRealtimeMonitoring $false'
+notes: >
+  Atomic T1562.001 test 19 (Set-MpPreference -DisableRealtimeMonitoring and
+  related -Disable* flags). Also exercise Add-MpPreference -ExclusionPath,
+  auditpol /clear, and Stop-Service -Name Sysmon. Tamper protection on a
+  current Windows build may block the preference change; Sysmon EID 1 still
+  records the command line. Matches sample_events/TC-11.

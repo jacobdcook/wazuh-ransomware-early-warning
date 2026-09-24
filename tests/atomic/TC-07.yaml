@@ -1,0 +1,18 @@
+id: TC-07
+name: Benign regression set
+technique: n/a
+atomic_ref: n/a
+command: vssadmin.exe list shadows
+expected_rule_ids: []
+expected_level: 0
+cleanup: none
+notes: >
+  Must produce zero alerts. Representative one-liner is backup-agent VSS
+  list (not delete). Also run the rest of the set on the same host:
+  wuauclt /RunNow, usoclient StartScan, TiWorker, wbadmin start backup,
+  rmm_agent powershell -File C:\Program Files\RMM\health.ps1, software
+  deploy service under C:\Program Files\, powershell -ExecutionPolicy
+  Bypass -File from Program Files, wevtutil qe (not cl), Defender
+  MsMpEng.exe opening lsass with 0x1400, loopback ADMIN$, Run key to
+  Program Files, and a normal user document write. See
+  tests/sample_events/TC-07/.

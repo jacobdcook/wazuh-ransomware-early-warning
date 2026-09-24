@@ -1,0 +1,16 @@
+id: TC-10
+name: Suspicious new service
+technique: T1543.003
+atomic_ref: atomics/T1543.003 test 1
+command: 'sc.exe create UserSvc binPath= C:\Users\jdoe\AppData\Local\Temp\svc.exe'
+expected_rule_ids:
+  - 100107
+expected_level: 12
+cleanup: sc.exe delete UserSvc
+notes: >
+  Atomic T1543.003 test 1 retargets Fax at powershell.exe (ImagePath
+  contains powershell, so 100107 fires). Lab one-liner creates a new
+  service under \Users\ instead, matching sample_events/TC-10. Test 2
+  default binary under PathToAtomicsFolder will not fire unless the path
+  is Users/Temp/AppData/ProgramData. PSEXESVC is owned by 100104, not this
+  rule. Program Files deploy is a TC-07 near-miss.

@@ -1,0 +1,15 @@
+id: TC-04
+name: SMB admin share and PsExec remote service
+technique: T1021.002
+atomic_ref: atomics/T1021.002 test 1 + atomics/T1569.002 test 2
+command: 'psexec.exe \\SRV-FILE-01 -accepteula cmd'
+expected_rule_ids:
+  - 100103
+  - 100104
+expected_level: 12
+cleanup: 'net use \\SRV-FILE-01\ADMIN$ /delete'
+notes: >
+  One hop from WS-FIN-02 (or WS-OPS-07) to SRV-FILE-01. PsExec maps ADMIN$
+  (Security 5140, rule 100103) and installs PSEXESVC (System 7045, rule
+  100104). Loopback ADMIN$ is a TC-07 near-miss. Matches
+  sample_events/TC-04. Technique pair is T1021.002 / T1569.002.

@@ -1,0 +1,15 @@
+id: TC-08
+name: Registry run-key persistence
+technique: T1547.001
+atomic_ref: atomics/T1547.001 test 1
+command: 'reg.exe add HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Updater /t REG_SZ /F /d C:\Users\jdoe\AppData\Local\Temp\update.exe'
+expected_rule_ids:
+  - 100105
+expected_level: 12
+cleanup: 'reg.exe delete HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v Updater /f'
+notes: >
+  Atomic T1547.001 test 1 default payload is C:\Path\AtomicRedTeam.exe,
+  which 100105 misses on purpose (not Users/Temp/AppData/ProgramData or a
+  script host). Lab command uses a user Temp path so Sysmon EID 13 Details
+  matches. Also run a RunOnce key to a .ps1 under AppData. Matches
+  sample_events/TC-08.

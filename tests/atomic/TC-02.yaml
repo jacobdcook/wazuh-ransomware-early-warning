@@ -1,0 +1,14 @@
+id: TC-02
+name: Windows event log cleared
+technique: T1070.001
+atomic_ref: atomics/T1070.001 test 1
+command: wevtutil.exe cl Security
+expected_rule_ids:
+  - 100109
+expected_level: 13
+cleanup: 'none. Cleared channels cannot be restored. Run only on a disposable lab VM.'
+notes: >
+  Atomic T1070.001 test 1 is wevtutil cl <log>. Current Atomic indexes the
+  same wevtutil command under T1685.005 test 1. Also run test 2
+  (Clear-EventLog). Do not use wevtutil qe (query); that is a TC-07 near-miss.
+  Matches sample_events/TC-02.

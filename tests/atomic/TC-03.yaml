@@ -1,0 +1,14 @@
+id: TC-03
+name: LSASS memory access
+technique: T1003.001
+atomic_ref: atomics/T1003.001 test 1
+command: 'procdump.exe -accepteula -ma lsass.exe C:\Windows\Temp\lsass_dump.dmp'
+expected_rule_ids:
+  - 100100
+expected_level: 14
+cleanup: 'del C:\Windows\Temp\lsass_dump.dmp'
+notes: >
+  Atomic T1003.001 test 1 (ProcDump -ma). Test 2 is rundll32 comsvcs.dll
+  MiniDump. Both open lsass.exe with dump-class GrantedAccess (0x1010 /
+  0x1038 / 0x1fffff / 0x143a). Defender MsMpEng.exe with 0x1400 is a TC-07
+  near-miss. Matches sample_events/TC-03.

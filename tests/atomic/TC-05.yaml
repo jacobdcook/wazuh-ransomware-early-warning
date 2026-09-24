@@ -1,0 +1,15 @@
+id: TC-05
+name: Encoded or obfuscated PowerShell
+technique: T1059.001
+atomic_ref: atomics/T1059.001 test 15
+command: "powershell.exe -EncodedCommand VwByAGkAdABlAC0ASABvAHMAdAAgACcAbABhAGIAJwA="
+expected_rule_ids:
+  - 100110
+expected_level: 10
+cleanup: none
+notes: >
+  Atomic T1059.001 test 15 covers -EncodedCommand / -enc / -e variations.
+  Payload is UTF-16LE Write-Host 'lab' (same bytes as sample_events/TC-05).
+  Also run powershell.exe -nop -ep bypass -w hidden -File with a user path
+  if you need the hidden/bypass sample. Signed -File from Program Files is
+  a TC-07 near-miss.

