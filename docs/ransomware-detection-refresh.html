@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ransomware detection refresh</title>
+<style>
+:root {
+  --ink: #1b2416;
+  --muted: #4d5648;
+  --paper: #f3efe4;
+  --card: #fffdf8;
+  --line: #d4cbb8;
+  --rust: #8b2e1a;
+  --navy: #1e3a4c;
+  --ok: #2d5a3d;
+  --warn: #8a5a12;
+}
+* { box-sizing: border-box; }
+html { font-size: 17px; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background: var(--paper);
+  font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  line-height: 1.45;
+}
+header {
+  background: var(--navy);
+  color: #f3efe4;
+  padding: 1.6rem 1.2rem 1.2rem;
+}
+header p { color: #c9d4cc; max-width: 46rem; }
+h1 { font-size: 1.7rem; margin: 0 0 0.4rem; letter-spacing: 0.01em; }
+h2 {
+  font-size: 1.25rem;
+  color: var(--navy);
+  border-bottom: 2px solid var(--rust);
+  padding-bottom: 0.2rem;
+  margin-top: 2rem;
+}
+h3 { font-size: 1.05rem; margin: 0 0 0.4rem; color: var(--navy); }
+nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.9rem;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.85rem;
+}
+nav a { color: #f0d3b0; }
+main { max-width: 52rem; margin: 0 auto; padding: 0 1.2rem 3rem; }
+.lede { font-size: 1.05rem; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.88rem;
+  background: var(--card);
+}
+th, td {
+  text-align: left;
+  border: 1px solid var(--line);
+  padding: 0.35rem 0.5rem;
+  vertical-align: top;
+}
+th { background: #e8e1d0; }
+code, .mono {
+  font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+  font-size: 0.86em;
+  background: #eae4d6;
+  padding: 0.05em 0.28em;
+}
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--rust);
+  padding: 0.75rem 0.9rem 0.85rem;
+  margin: 0.85rem 0;
+}
+.card.sev1 { border-left-color: var(--rust); }
+.card.sev2 { border-left-color: var(--warn); }
+.card.sev3 { border-left-color: var(--ok); }
+.stage {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.7rem 0.9rem;
+  margin: 0.6rem 0;
+}
+.stage h3 { color: var(--rust); }
+ol.timeline { padding-left: 1.3rem; }
+ol.timeline li { margin: 0.25rem 0; }
+details {
+  background: var(--card);
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.7rem;
+  margin: 0.45rem 0;
+}
+summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+.tag {
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 0.75rem;
+  background: #e8e1d0;
+  padding: 0.08rem 0.35rem;
+  margin-right: 0.25rem;
+}
+footer {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 0 1.2rem 2rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+.iv { margin: 0.45rem 0 0.45rem 1.1rem; }
+</style>
+</head>
+<body>
+<header>
+<h1>Ransomware detection refresh</h1>
+<p>Teaching page for the Riverbend Managed IT Services lab pack: twelve Wazuh rules on Sysmon and Windows events, plus what they miss. Riverbend, its hostnames, and sample accounts are fictitious. Incident TLDRs below are from public reporting on named real cases.</p>
+<nav>
+<a href="#chain">1. Kill chain</a>
+<a href="#incidents">2. Three incidents</a>
+<a href="#rules">3. Rule cards</a>
+<a href="#interview">4. Interview lines</a>
+<a href="#quiz">5. Self-quiz</a>
+</nav>
+</header>
+<main>
+
+<p class="lede">A hiring-manager skim: open this page, read one incident, read one rule card, then run <code>pytest -q</code> in the repo. The pack is host telemetry (Sysmon EID 1/10/11/13 plus Security/System). It does not see a VPN or Citrix login. MFA failures are a control gap, not a Wazuh miss.</p>
+
+<h2 id="chain">1. How modern ransomware chains unfold</h2>
+<p>Most 2021–2024 human-operated ransomware is not a smash-and-encrypt binary. Operators live in the network for hours to weeks. This lab maps that path onto twelve primary rules (100100–100111) and two support rules (100120 parent write, 100121 mass-write burst at level 15).</p>
+
+<div class="stage">
+<h3>Initial access</h3>
+<p>Stolen VPN or Citrix passwords, unused portals left on, phishing, or a trusted RMM/update channel. This pack has no identity rule. The first host-visible step is often a download cradle or an encoded PowerShell stager.</p>
+<p><span class="tag">100111 T1105</span> <span class="tag">100110 T1059.001</span> Catch <code>Invoke-WebRequest</code>, <code>iwr</code>, <code>Net.WebClient</code>, <code>certutil -urlcache</code>, <code>bitsadmin /transfer</code>, <code>curl.exe -o</code>, and <code>-enc</code> / <code>-EncodedCommand</code> / <code>-w hidden</code> / <code>-nop -ep bypass</code>.</p>
+</div>
+
+<div class="stage">
+<h3>Precursor tooling</h3>
+<p>Operators drop remote admin tools, disable Defender, and clear logs so later stages are quieter. Persistence (run keys, scheduled tasks, odd services) often lands here so they survive a reboot.</p>
+<p><span class="tag">100108 T1562.001</span> Defender / auditpol / Sysmon stop.
+<span class="tag">100109 T1070.001</span> Security 1102, System 104, <code>wevtutil cl</code>.
+<span class="tag">100105 T1547.001</span> Run/RunOnce to user/temp/script.
+<span class="tag">100106 T1053.005</span> <code>schtasks /create /sc</code> with a script host or <code>\Users\</code>.
+<span class="tag">100107 T1543.003</span> New service ImagePath in user/temp or a script host.</p>
+</div>
+
+<div class="stage">
+<h3>Credential theft</h3>
+<p>LSASS memory access is the usual path to domain-wide movement. Sysmon EID 10 with a dump-capable access mask is the lab’s SEV-1 signal.</p>
+<p><span class="tag">100100 T1003.001</span> <code>TargetImage</code> ending in <code>\lsass.exe</code> and <code>GrantedAccess</code> in <code>0x1010</code>, <code>0x1038</code>, <code>0x1fffff</code>, <code>0x143a</code>.</p>
+</div>
+
+<div class="stage">
+<h3>Lateral movement</h3>
+<p>Admin shares and PsExec-style service installs turn one workstation into a file server or DC problem. Non-loopback 5140 on <code>ADMIN$</code>/<code>C$</code> and a <code>PSEXESVC</code> 7045 are the two dedicated rules.</p>
+<p><span class="tag">100103 T1021.002</span> <span class="tag">100104 T1569.002</span> <span class="tag">100107</span> also fires if they register a non-PsExec service from a user-writable path.</p>
+</div>
+
+<div class="stage">
+<h3>Shadow copy deletion</h3>
+<p>Inhibit recovery before encrypt. Classic: <code>vssadmin delete shadows</code>, <code>wmic shadowcopy delete</code>, <code>bcdedit</code> recovery off, <code>wbadmin delete catalog</code>, plus PowerShell WMI/CIM <code>Win32_ShadowCopy</code> removal (sibling 100122 on 4104).</p>
+<p><span class="tag">100101 T1490</span> SEV-1 level 14. This is the last cheap chance to page before notes drop.</p>
+</div>
+
+<div class="stage">
+<h3>Encryption</h3>
+<p>Ransom-note names and double extensions on Sysmon EID 11. Level 15. Local firewall isolation. If they keep original names, the mass-write burst is the backup tripwire.</p>
+<p><span class="tag">100102 T1486</span> notes / <code>.locked</code> <code>.encrypted</code> <code>.crypt</code> <code>.enc</code>.
+<span class="tag">100121</span> 30 user-document writes in 60 seconds on the same computer (level 15, also isolates).</p>
+</div>
+
+<table>
+<thead>
+<tr><th>Stage</th><th>Primary rules</th><th>What the pack cannot see</th></tr>
+</thead>
+<tbody>
+<tr><td>Initial access</td><td>100111, 100110</td><td>VPN/Citrix logon, MFA absence, phishing mail, trusted RMM push</td></tr>
+<tr><td>Precursor tooling</td><td>100108, 100109, 100105, 100106, 100107</td><td>GPO Defender tamper, unsigned-API tasking, LOLBin services under System32</td></tr>
+<tr><td>Credential theft</td><td>100100</td><td>Direct syscalls, MiniDump from a trusted signed process, other access masks</td></tr>
+<tr><td>Lateral movement</td><td>100103, 100104</td><td>IPC$ only, Impacket without PSEXESVC, renamed service names</td></tr>
+<tr><td>Shadow copy deletion</td><td>100101 (+100122)</td><td><code>diskshadow.exe</code>, renamed vssadmin, compiled WMI with no cmdlet strings</td></tr>
+<tr><td>Encryption</td><td>100102, 100121</td><td>In-place encrypt that keeps original names and stays under the burst threshold</td></tr>
+</tbody>
+</table>
+
+<h2 id="incidents">2. Three incident TLDRs (public reporting)</h2>
+<p>These are not Riverbend events. They are named, public cases. The “would catch” lines assume the same Sysmon plus Wazuh pack was on the Windows endpoints. They are not a claim that this lab was present.</p>
+
+<article class="card">
+<h3>Kaseya VSA / REvil (July 2021)</h3>
+<p><strong>Attacker.</strong> REvil (Sodinokibi) ransomware operators. They used a vulnerability in Kaseya VSA, an RMM used by managed service providers, and rode the trusted update/agent channel into downstream customer endpoints over the US Independence Day weekend (CISA/FBI advisory AA21-190A; Kaseya’s public incident updates).</p>
+<p><strong>Timeline.</strong></p>
+<ol class="timeline">
+<li>Operators obtain the ability to instruct VSA to run a payload on managed agents (supply-chain / RMM abuse, not a random workstation exploit).</li>
+<li>A malicious “update” lands on MSP customer endpoints from software the help desk already trusts.</li>
+<li>On-host ransomware behavior follows: inhibit recovery, encrypt files, drop ransom instructions. Public estimates of downstream impact started in the hundreds of businesses and were later refined; the precise count is less important than the fan-out through one RMM.</li>
+<li>Kaseya took VSA SaaS offline. A decryptor later became available after disruption of REvil infrastructure (public FBI/Kaseya statements).</li>
+</ol>
+<p><strong>What this lab’s rules would catch.</strong> On each Windows host that still had Sysmon: <code>100101</code> if they used watched VSS/bcdedit/wbadmin strings; <code>100102</code> on listed note names or <code>.locked</code>-style extensions; <code>100121</code> if they burst-wrote user documents; possibly <code>100110</code>/<code>100111</code> if a decoded PowerShell cradle was visible outside the VSA agent. Isolation would fire only on level 15 (<code>100102</code>/<code>100121</code>).</p>
+<p><strong>What went wrong.</strong> The delivery path looked like a legitimate RMM job. TC-07 in this repo treats <code>rmm_agent</code> running signed <code>-File</code> scripts from <code>C:\Program Files\RMM\</code> as zero-alert on purpose. A Kaseya-style push that never shows <code>-enc</code> or a user-writable ImagePath will not page on 100110/100107. Independent endpoint detection (VSS delete, notes, mass writes) is the residual net. Customers who only trusted the MSP’s green dashboard had no second sensor.</p>
+<p><strong>Interview-ready sentence.</strong> “Kaseya 2021 is why I will not allowlist an entire RMM process tree: I allowlist the signed health-check pattern we regression-test in TC-07, and I still page on T1490 and T1486 because a trusted agent can still delete shadows and write ransom notes.”</p>
+</article>
+
+<article class="card">
+<h3>Colonial Pipeline / DarkSide (May 2021)</h3>
+<p><strong>Attacker.</strong> DarkSide ransomware (RaaS). Colonial Pipeline Company publicly described a compromise that began through a VPN account. The account had no MFA. Reporting and company statements described a legacy VPN that was still reachable.</p>
+<p><strong>Timeline.</strong></p>
+<ol class="timeline">
+<li>Stolen or reused VPN credentials, no MFA, unused portal still on the internet (company statements, May 2021).</li>
+<li>Operators spend on the order of a week inside IT: tooling, credential theft, and lateral movement typical of DarkSide affiliates (public technical reporting: remote admin, LSASS, SMB).</li>
+<li>7 May 2021: encryption / discovery; Colonial shut down pipeline OT as a precaution because IT and OT were coupled enough that they would not risk running blind.</li>
+<li>Colonial paid a bitcoin ransom (about $4.4 million at the time). The US Department of Justice later recovered a large share of that bitcoin. East Coast fuel disruption followed the shutdown, not a unique encryptor trick.</li>
+</ol>
+<p><strong>What this lab’s rules would catch.</strong> Nothing on the VPN logon itself. Once on Windows: <code>100111</code>/<code>100110</code> for common stagers; <code>100100</code> for LSASS dump masks; <code>100103</code>/<code>100104</code> for admin-share and PSEXESVC; <code>100108</code>/<code>100109</code> if they killed Defender or cleared logs; <code>100101</code> before encrypt; <code>100102</code>/<code>100121</code> at encryption time. That is a precursor page, not a pipeline-control system.</p>
+<p><strong>What went wrong.</strong> Identity: an unused VPN without MFA. Architecture: IT compromise was treated as an OT stop because the company could not prove isolation. Detection that only watches the OT historian would have been silent. Host Sysmon on the jump path is the relevant sensor for this pack.</p>
+<p><strong>Interview-ready sentence.</strong> “Colonial is an MFA and asset-inventory failure first: this Sysmon pack would not have seen the VPN bind, but it is built to page on LSASS, ADMIN$, and vssadmin so the week of hands-on-keyboard is not a silent week.”</p>
+</article>
+
+<article class="card">
+<h3>Change Healthcare / ALPHV-BlackCat (February 2024)</h3>
+<p><strong>Attacker.</strong> ALPHV (BlackCat) ransomware operators / affiliates. Change Healthcare (UnitedHealth Group) is a claims clearinghouse. Public congressional testimony described a Citrix remote-access portal that did not have MFA, used with a compromised credential. Some later technical write-ups also discussed Citrix session-token theft (CVE-2023-4966, “Citrix Bleed”) as a method used against Citrix in that era; the company’s testimony emphasized the portal and the missing MFA.</p>
+<p><strong>Timeline.</strong></p>
+<ol class="timeline">
+<li>Remote access to a Citrix portal without MFA (public testimony, 2024).</li>
+<li>Hands-on-keyboard in Windows: data theft plus ransomware, consistent with ALPHV affiliate playbooks (exfil then encrypt).</li>
+<li>21 February 2024: Change Healthcare systems taken offline; pharmacy claims and payments failed at national scale for days to weeks.</li>
+<li>UnitedHealth later stated a ransom was paid (public reporting around $22 million). Disruption cost and PHI exposure dominated the aftermath, not the encryptor’s file extension.</li>
+</ol>
+<p><strong>What this lab’s rules would catch.</strong> Not the Citrix logon. On domain-joined Windows that had this Sysmon config: the same precursor set as Colonial (<code>100100</code>, <code>100103</code>, <code>100104</code>, <code>100110</code>, <code>100111</code>, <code>100108</code>), then <code>100101</code> and <code>100102</code>/<code>100121</code>. BlackCat often uses legitimate admin channels; renamed PsExec cousins and WMI without <code>PSEXESVC</code> are documented misses for <code>100104</code>.</p>
+<p><strong>What went wrong.</strong> MFA was not on a remote-access concentrator that sat in front of a system the US health-payment system depends on. Concentration risk is a business-architecture issue. This pack does not fix that. It only shortens the dwell once a Windows host starts dumping LSASS or deleting shadows.</p>
+<p><strong>Interview-ready sentence.</strong> “Change Healthcare 2024 is why I separate identity detections from host detections: I will say out loud that rules 100100–100111 never see a Citrix bind, and I will still insist on T1003.001 and T1490 because those are the Windows steps that turn a portal foothold into a clearinghouse outage.”</p>
+</article>
+
+<h2 id="rules">3. Per-rule cards</h2>
+<p>False-positive handling is not a comment in the XML. It is TC-07: synthetic benign events that must produce <code>expect.rule_id: null</code>. <code>test_tc07_zero_alerts</code> fails the pack if any primary rule matches them.</p>
+
+<article class="card sev1" id="r-100100">
+<h3>100100 · T1003.001 · LSASS memory access · SEV-1 · level 14</h3>
+<p><strong>Catches.</strong> Sysmon EID 10 (parent 61612) when <code>TargetImage</code> is <code>lsass.exe</code> and <code>GrantedAccess</code> is a dump-capable mask (<code>0x1010</code>, <code>0x1038</code>, <code>0x1fffff</code>, <code>0x143a</code>). TC-03: procdump-style and full-access samples.</p>
+<p><strong>Misses.</strong> Direct-syscall dumpers; <code>MiniDumpWriteDump</code> from a trusted signed process; other masks (including some query-only opens).</p>
+<p><strong>False positives / TC-07.</strong> Defender <code>MsMpEng.exe</code> opening LSASS with <code>0x1400</code> (<code>defender_lsass.json</code>). That mask is not in the allow-list of dump masks, so the rule stays quiet without an exclusion on the Defender path.</p>
+</article>
+
+<article class="card sev1" id="r-100101">
+<h3>100101 · T1490 · Shadow copy deletion · SEV-1 · level 14</h3>
+<p><strong>Catches.</strong> Sysmon EID 1 (parent 61603): <code>vssadmin delete shadows</code>, <code>wmic shadowcopy delete</code>, <code>vssadmin resize shadowstorage</code>, <code>bcdedit /set {default} recoveryenabled no</code>, <code>wbadmin delete catalog</code>, plus PowerShell WMI/CIM <code>Win32_ShadowCopy</code> removal. Sibling 100122 covers 4104 script blocks. TC-01 v1/v2/v3.</p>
+<p><strong>Misses.</strong> Renamed vssadmin/wmic, <code>diskshadow.exe</code>, compiled WMI with no watched strings. Query-only <code>Get-WmiObject Win32_ShadowCopy</code> without <code>Remove-*</code>/<code>Delete()</code> is out of scope.</p>
+<p><strong>False positives / TC-07.</strong> Backup account <code>svc_backup</code> running <code>vssadmin list shadows</code> and <code>wbadmin start backup</code> (<code>backup_agent.json</code>). The regex keys on delete/resize/catalog-wipe, not list or start backup.</p>
+</article>
+
+<article class="card sev1" id="r-100102">
+<h3>100102 · T1486 · Ransom note / encryption artifact · SEV-1 · level 15 (AR)</h3>
+<p><strong>Catches.</strong> Sysmon EID 11 (parent 61613) on note names (<code>RANSOM_NOTE.txt</code>, <code>README_TO_DECRYPT</code>, <code>HOW_TO_RECOVER</code>, <code>DECRYPT_INSTRUCTIONS</code>) or double extensions <code>.locked</code>, <code>.encrypted</code>, <code>.crypt</code>, <code>.enc</code>. TC-06. Active response: local firewall isolate.</p>
+<p><strong>Misses.</strong> Encrypt-in-place that keeps original names. Custom note filenames (html/hta/operator-chosen) not on the list.</p>
+<p><strong>False positives / TC-07.</strong> Word writing <code>quarterly-notes.docx</code> (<code>normal_document_write.json</code>) is a 100120-class user-path write at most, not 100102. Burst isolation is 100121 (30/60s), not a single Office save.</p>
+</article>
+
+<article class="card sev2" id="r-100103">
+<h3>100103 · T1021.002 · SMB admin-share · SEV-2 · level 12</h3>
+<p><strong>Catches.</strong> Security 5140 (parent 60100) with <code>ShareName</code> <code>ADMIN$</code> or <code>C$</code> and a non-loopback <code>IpAddress</code>. TC-04.</p>
+<p><strong>Misses.</strong> IPC$-only, 5145-only, or 5140 never logged because share audit is off.</p>
+<p><strong>False positives / TC-07.</strong> Loopback <code>127.0.0.1</code> / <code>::1</code> ADMIN$ (<code>loopback_admin_share.json</code>) is ignored on purpose so local admin tools do not page.</p>
+</article>
+
+<article class="card sev2" id="r-100104">
+<h3>100104 · T1569.002 · PsExec-style service · SEV-2 · level 12</h3>
+<p><strong>Catches.</strong> System 7045 (parent 60001): service name <code>PSEXESVC</code>, ImagePath <code>%SystemRoot%\PSEXESVC.exe</code>, or ImagePath under <code>\\ADMIN$\</code>. TC-04.</p>
+<p><strong>Misses.</strong> Renamed service, Impacket smbexec/wmiexec with no PSEXESVC, PAExec/CSExec.</p>
+<p><strong>False positives / TC-07.</strong> Software deploy creating <code>RiverbendDeploy</code> with ImagePath under <code>C:\Program Files\Deploy\</code> (<code>software_deploy.json</code>) is not PSEXESVC and is not 100107 either.</p>
+</article>
+
+<article class="card sev2" id="r-100105">
+<h3>100105 · T1547.001 · Run / RunOnce · SEV-2 · level 12</h3>
+<p><strong>Catches.</strong> Sysmon EID 13 (parent 61615) on <code>\CurrentVersion\Run\</code> or <code>\RunOnce\</code> when Details point at <code>\Users\</code>, <code>\Temp\</code>, <code>\AppData\</code>, <code>\ProgramData\</code>, or a script host. TC-08.</p>
+<p><strong>Misses.</strong> COM hijack, Winlogon, IFEO; Run keys whose Details are signed Program Files binaries.</p>
+<p><strong>False positives / TC-07.</strong> Run key Details <code>C:\Program Files\Riverbend\agent.exe</code> (<code>runkey_programfiles.json</code>) does not match the user/temp/script Details regex.</p>
+</article>
+
+<article class="card sev2" id="r-100106">
+<h3>100106 · T1053.005 · Scheduled task · SEV-2 · level 12</h3>
+<p><strong>Catches.</strong> Security 4698 or Sysmon EID 1 <code>schtasks /create</code> with <code>/sc</code> and a script host or <code>\Users\</code> path. TC-09.</p>
+<p><strong>Misses.</strong> Task Scheduler COM / <code>Register-ScheduledTask</code> with no <code>schtasks /create /sc</code> on the command line. Signed Program Files actions.</p>
+<p><strong>False positives / TC-07.</strong> No scheduled-task sample in TC-07; the closest cousin is RMM running <code>-File</code> from Program Files, which never includes <code>schtasks /create</code>.</p>
+</article>
+
+<article class="card sev2" id="r-100107">
+<h3>100107 · T1543.003 · Suspicious new service · SEV-2 · level 12</h3>
+<p><strong>Catches.</strong> System 7045 ImagePath under <code>\Users\</code>, <code>\Temp\</code>, <code>\AppData\</code>, <code>\ProgramData\</code>, or containing <code>powershell</code>, <code>cmd.exe /c</code>, <code>rundll32</code>, <code>-enc</code>. TC-10. PSEXESVC belongs to 100104.</p>
+<p><strong>Misses.</strong> LOLBin ImagePath under System32; MSI install into Program Files.</p>
+<p><strong>False positives / TC-07.</strong> Same <code>software_deploy.json</code> Program Files ImagePath. Windows Update (<code>wuauclt</code>, <code>usoclient</code>, <code>TiWorker</code>) is EID 1, not 7045.</p>
+</article>
+
+<article class="card sev2" id="r-100108">
+<h3>100108 · T1562.001 · Defender or logging disabled · SEV-2 · level 13</h3>
+<p><strong>Catches.</strong> <code>Set-MpPreference -Disable*</code>, <code>Add-MpPreference -ExclusionPath</code>, Defender DisableAntiSpyware / DisableRealtimeMonitoring set to 1, <code>auditpol /clear</code>, <code>Stop-Service -Name Sysmon</code>. TC-11.</p>
+<p><strong>Misses.</strong> GPO/WMI tamper, <code>sc stop WinDefend</code>, <code>fltmc unload</code> without those strings.</p>
+<p><strong>False positives / TC-07.</strong> Windows Update processes do not carry those command lines (<code>windows_update.json</code>). Backup and RMM samples likewise do not disable Defender.</p>
+</article>
+
+<article class="card sev2" id="r-100109">
+<h3>100109 · T1070.001 · Event log cleared · SEV-2 · level 13</h3>
+<p><strong>Catches.</strong> Security 1102, System 104, Sysmon EID 1 <code>wevtutil cl</code> / <code>Clear-EventLog</code>. TC-02.</p>
+<p><strong>Misses.</strong> .NET <code>EventLog.Clear</code> from a compiled binary, odd quoting, copied binary name, Security 1100 (service shutdown).</p>
+<p><strong>False positives / TC-07.</strong> <code>wevtutil qe Security</code> (query, not <code>cl</code>) in <code>wevtutil_query.json</code>. The matcher is clear/cl, not query.</p>
+</article>
+
+<article class="card sev3" id="r-100110">
+<h3>100110 · T1059.001 · Encoded / obfuscated PowerShell · SEV-3 · level 10</h3>
+<p><strong>Catches.</strong> Sysmon EID 1 and PowerShell 4104: <code>-enc</code>, <code>-e </code>, <code>-EncodedCommand</code>, <code>FromBase64String</code>, <code>-w hidden</code>, <code>-nop -ep bypass</code>. Daily queue, not a page. TC-05.</p>
+<p><strong>Misses.</strong> Token splitting, GZip+IEX, many Invoke-Obfuscation variants that never use those markers.</p>
+<p><strong>False positives / TC-07.</strong> RMM <code>powershell.exe -File C:\Program Files\RMM\health.ps1</code> and <code>-ExecutionPolicy Bypass -File</code> from that same tree (<code>rmm_health.json</code>). Bypass plus a signed Program Files <code>-File</code> is not <code>-enc</code> and is not <code>-w hidden</code>.</p>
+</article>
+
+<article class="card sev3" id="r-100111">
+<h3>100111 · T1105 · Download cradle · SEV-3 · level 10</h3>
+<p><strong>Catches.</strong> <code>Invoke-WebRequest</code>, <code>iwr </code>, <code>DownloadString</code>, <code>DownloadFile</code>, <code>Net.WebClient</code>, <code>certutil -urlcache</code>, <code>bitsadmin /transfer</code>, <code>curl.exe -o</code>, <code>Start-BitsTransfer</code>. TC-12.</p>
+<p><strong>Misses.</strong> <code>Invoke-RestMethod</code>, browser downloads, local <code>certutil -decode</code>, split-PID transfer.</p>
+<p><strong>False positives / TC-07.</strong> RMM health scripts do not include those transfer strings. Windows Update uses its own agents (<code>wuauclt</code>/<code>usoclient</code>/<code>TiWorker</code>), not certutil urlcache.</p>
+</article>
+
+<h2 id="interview">4. Ten interview-ready sentences</h2>
+<ol class="iv">
+<li>This pack pages on precursors (LSASS, shadow-copy delete, admin shares) so encryption is not the first alert.</li>
+<li>Active response is a local Windows firewall isolate, bound only to level 15 (100102 and 100121), with a documented manual rollback and no timeout.</li>
+<li>TC-07 is the false-positive contract: Windows Update, backup VSS list / start backup, signed RMM <code>-File</code> under Program Files, Defender LSASS <code>0x1400</code>, loopback ADMIN$, Program Files services and Run keys, <code>wevtutil qe</code>, and a normal Office save.</li>
+<li>Rule 100102 misses encryptors that keep original names; 100121 is the burst backup, not a substitute for a note matcher.</li>
+<li>I confirm stock parent SIDs with <code>wazuh-logtest</code> on the deployed Wazuh build because 61603/61612/60100 drift between releases.</li>
+<li>Kaseya 2021 is why an RMM allowlist is a pattern (signed Program Files health script), not a blank check on the agent process tree.</li>
+<li>Colonial and Change Healthcare are MFA-on-remote-access failures; these twelve rules never see the VPN or Citrix bind.</li>
+<li>100104 is PSEXESVC on purpose; Impacket without that service name is a listed miss, not an untested hope.</li>
+<li>SEV-3 (100110, 100111) is a same-day queue at level 10 so encoded PowerShell does not hide a SEV-1 page and does not wake the on-call by itself.</li>
+<li>Isolation is not process kill: DNS, SMB, and AD die until <code>isolate-host.ps1 -Rollback</code>; a wrong manager IP in extra_args can leave only a hypervisor console.</li>
+</ol>
+
+<h2 id="quiz">5. Self-quiz</h2>
+<p>Open a row only after you have an answer. These are the questions a reviewer should be able to fail you on.</p>
+
+<details>
+<summary>1. Which two rule IDs can trigger host isolation, and why not 100101?</summary>
+<p>100102 and 100121 only. Isolation is bound to Wazuh level 15. 100101 is SEV-1 but level 14 (page, do not auto-isolate), because backup mistakes on VSS delete should not brick the host’s DNS/SMB without a human.</p>
+</details>
+
+<details>
+<summary>2. Why does <code>vssadmin list shadows</code> under <code>svc_backup</code> not fire 100101?</summary>
+<p>The matcher is delete/resize/catalog-wipe (and PowerShell Remove/Delete on Win32_ShadowCopy), not list. TC-07 <code>backup_agent.json</code> is the regression that keeps that distinction.</p>
+</details>
+
+<details>
+<summary>3. Name one LSASS access that is supposed to be silent.</summary>
+<p>Defender <code>MsMpEng.exe</code> with <code>GrantedAccess</code> <code>0x1400</code>. Dump masks in 100100 are a tight set. Direct syscalls are a miss, not a TC-07 case.</p>
+</details>
+
+<details>
+<summary>4. Would this pack have alerted on the Colonial VPN logon or the Change Healthcare Citrix portal?</summary>
+<p>No. There is no identity/MFA rule. Alerts start when Windows host telemetry matches (LSASS, ADMIN$, encoded PowerShell, VSS delete, notes).</p>
+</details>
+
+<details>
+<summary>5. What is the Kaseya lesson for TC-07’s <code>rmm_agent</code> samples?</summary>
+<p>Signed <code>-File</code> health scripts from <code>C:\Program Files\RMM\</code> stay zero-alert so real RMM does not melt the queue. A VSA-style malicious push is still expected to show up on T1490/T1486/100121 if those behaviors happen. Do not widen the allowlist to “any child of the RMM agent.”</p>
+</details>
+
+<details>
+<summary>6. 100104 vs 100107: who owns a new service?</summary>
+<p>PSEXESVC / ADMIN$ ImagePath is 100104. User/temp/script-host ImagePath is 100107. A Program Files MSI service is neither (TC-07 software deploy).</p>
+</details>
+
+<details>
+<summary>7. Where do level 10 alerts go, and which rules are they?</summary>
+<p>Daily triage queue, not paging. 100110 (encoded PowerShell) and 100111 (download cradle). Routing is in the coverage map: SEV-3 = level 10–11.</p>
+</details>
+
+<details>
+<summary>8. What does 100102 miss that 100121 is meant to backstop?</summary>
+<p>Encryption that keeps original filenames and extensions, or notes with custom names. 100121 fires on 30 user-document EID 11 writes in 60 seconds on the same computer (parent 100120), level 15.</p>
+</details>
+
+<details>
+<summary>9. How do you prove a rule change did not break benign traffic?</summary>
+<p>Add or keep a TC-07 JSON with <code>expect.rule_id: null</code>, run <code>pytest -q</code>, and refuse to ship if <code>test_tc07_zero_alerts</code> fails. Tuning.md says the same: a live exclude that still matches the primary regex is not done.</p>
+</details>
+
+<details>
+<summary>10. Parent SID 61603 stopped matching after a Wazuh upgrade. What first?</summary>
+<p>Confirm the stock parent with <code>/var/ossec/bin/wazuh-logtest</code> on that build before rewriting field regexes. Coverage-map calls this out: IDs drift.</p>
+</details>
+
+</main>
+<footer>
+<p>Lab artifacts only. No production metrics. Commands: <code>pytest -q</code>, then the simulator under <code>./simulator_sandbox</code>. Runbook and coverage map live beside this file in <code>docs/</code>.</p>
+</footer>
+</body>
+</html>
