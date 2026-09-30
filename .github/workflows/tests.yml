@@ -1,0 +1,28 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          sudo apt-get update -qq && sudo apt-get install -y -qq libxml2-utils
+      - name: Validate XML
+        run: |
+          xmllint --noout sysmon/sysmonconfig.xml
+          xmllint --noout wazuh/rules/local_rules.xml
+          xmllint --noout wazuh/agent/ossec.conf.snippet.xml
+          xmllint --noout wazuh/active-response/ar-config.snippet.xml
+      - name: Run tests
+        run: python -m pytest -q
