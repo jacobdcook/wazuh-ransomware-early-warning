@@ -61,4 +61,4 @@ A live Ubuntu 22.04 all-in-one manager plus four Windows agents would still need
 11. Alert routing in operations: level ≥ 12 pages; level 10–11 sits on the daily queue; the > 15 alerts/day for a week trigger in [docs/tuning.md](docs/tuning.md) is measured from live `rule.id` counts, not from this file.
 12. Sysmon 15.x accepts the full-path ProcessAccess exclusions (`is` plus the `begin with`/`end with` Defender platform rules), the real `MsMpEng.exe` under `C:\ProgramData\Microsoft\Windows Defender\Platform\<version>\` stays silent, and a copy of `csrss.exe` run from `C:\Users\Public\` against lsass is logged as EID 10. `tests/test_sysmon.py` emulates this offline only.
 
-Nothing in this record claims those eleven items were executed.
+Nothing in this record claims those twelve items were executed.
