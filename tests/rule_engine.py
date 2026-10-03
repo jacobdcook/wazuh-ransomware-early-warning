@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -146,21 +147,21 @@ def evaluate_frequency(events: list, rules: list[Rule] | None = None) -> list[Ru
     return fired
 
 
+def _event_time(ev: dict) -> float:
+    raw = ev.get("timestamp")
+    if raw is None:
+        raise ValueError("frequency rule with timeframe needs a timestamp on every event")
+    if isinstance(raw, (int, float)):
+        return float(raw)
+    return datetime.fromisoformat(str(raw)).timestamp()
+
+
 def _burst(events: list, frequency: int, timeframe: int | None) -> bool:
     if len(events) < frequency:
         return False
     if not timeframe:
         return True
-    nums = []
-    for ev in events:
-        raw = ev.get("timestamp")
-        if raw is None:
-            return True
-        try:
-            nums.append(float(raw))
-        except (TypeError, ValueError):
-            return True
-    nums.sort()
+    nums = sorted(_event_time(ev) for ev in events)
     i = 0
     for j, t in enumerate(nums):
         while nums[i] < t - timeframe:

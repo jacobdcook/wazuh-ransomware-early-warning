@@ -1,4 +1,7 @@
 import re
+from datetime import datetime, timedelta, timezone
+
+import pytest
 
 from tests.rule_engine import evaluate, evaluate_frequency, get_field, match
 
@@ -113,33 +116,62 @@ def test_no_empty_description(rules):
         assert rule.description, f"{rule.id} has an empty description"
 
 
-def test_frequency_same_field_grouping(rules):
-    def write_event(computer, n):
-        return {
-            "win": {
-                "system": {
-                    "eventID": "11",
-                    "providerName": "Microsoft-Windows-Sysmon",
-                    "channel": "Microsoft-Windows-Sysmon/Operational",
-                    "computer": computer,
-                },
-                "eventdata": {
-                    "image": r"C:\Users\jdoe\AppData\Local\Temp\locker.exe",
-                    "targetFilename": rf"C:\Users\jdoe\Documents\file{n}.docx",
-                },
-            }
-        }
+BURST_T0 = datetime(2026, 9, 14, 2, 0, 0, tzinfo=timezone.utc)
 
+
+def _write_event(computer, n, seconds):
+    ts = BURST_T0 + timedelta(seconds=seconds)
+    return {
+        "timestamp": ts.strftime("%Y-%m-%dT%H:%M:%S.000+0000"),
+        "win": {
+            "system": {
+                "eventID": "11",
+                "providerName": "Microsoft-Windows-Sysmon",
+                "channel": "Microsoft-Windows-Sysmon/Operational",
+                "computer": computer,
+            },
+            "eventdata": {
+                "image": r"C:\Users\jdoe\AppData\Local\Temp\locker.exe",
+                "targetFilename": rf"C:\Users\jdoe\Documents\file{n}.docx",
+            },
+        },
+    }
+
+
+def _burst_fired(events, rules):
+    return 100121 in {r.id for r in evaluate_frequency(events, rules)}
+
+
+def test_frequency_same_field_grouping(rules):
+    same_host = [_write_event("WS-FIN-02", i, i) for i in range(30)]
+    assert _burst_fired(same_host, rules)
+    assert not _burst_fired(same_host[:29], rules)
+    split = [_write_event("WS-FIN-02", i, i) for i in range(15)]
+    split += [_write_event("WS-OPS-07", i, i) for i in range(15)]
+    assert not _burst_fired(split, rules)
+
+
+def test_burst_window_edges(rules):
     burst = next(r for r in rules if r.id == 100121)
-    same_host = [write_event("WS-FIN-02", i) for i in range(30)]
-    ids = {r.id for r in evaluate_frequency(same_host, rules)}
-    assert burst.id in ids
-    ids_short = {r.id for r in evaluate_frequency(same_host[:29], rules)}
-    assert burst.id not in ids_short
-    split = [write_event("WS-FIN-02", i) for i in range(15)]
-    split += [write_event("WS-OPS-07", i) for i in range(15)]
-    ids_split = {r.id for r in evaluate_frequency(split, rules)}
-    assert burst.id not in ids_split
+    assert (burst.frequency, burst.timeframe) == (30, 60)
+    first_29 = [_write_event("WS-FIN-02", i, i) for i in range(29)]
+    assert _burst_fired(first_29 + [_write_event("WS-FIN-02", 29, 60)], rules)
+    assert not _burst_fired(first_29 + [_write_event("WS-FIN-02", 29, 61)], rules)
+
+
+def test_burst_slow_writes_over_an_hour_do_not_fire(rules):
+    slow = [_write_event("WS-FIN-02", i, i * 120) for i in range(30)]
+    assert not _burst_fired(slow, rules)
+    cluster = [_write_event("WS-FIN-02", 100 + i, 1801 + i) for i in range(29)]
+    assert _burst_fired(slow + cluster, rules)
+
+
+def test_burst_requires_timestamps(rules):
+    events = [_write_event("WS-FIN-02", i, i) for i in range(30)]
+    for ev in events:
+        del ev["timestamp"]
+    with pytest.raises(ValueError):
+        evaluate_frequency(events, rules)
 
 
 def test_tc01_v3_powershell_wmi_missed_by_legacy_regex(rules, sample_events_by_tc):

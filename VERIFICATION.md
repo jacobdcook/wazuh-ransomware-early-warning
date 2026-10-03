@@ -1,6 +1,6 @@
 # Verification record
 
-Date: 2026-09-16 (UTC timestamp from this run: `Wed Sep 16 03:15:46 PM UTC 2026`).
+Date: 2026-10-02 (UTC timestamp from this run: `Sat Oct  3 12:52:13 AM UTC 2026`).
 
 Commands below ran in this git checkout on a Linux workstation. They did not run on a Wazuh manager, a Windows agent, or Sysmon. Deployment steps in [docs/install-guide.md](docs/install-guide.md) are procedure only.
 
@@ -9,11 +9,11 @@ Commands below ran in this git checkout on a Linux workstation. They did not run
 Working directory: repository root. Command: `python3 -m pytest -q`.
 
 ```
-..........................                                               [100%]
-26 passed in 0.12s
+...........................................                              [100%]
+43 passed in 0.11s
 ```
 
-Exit status 0. Twenty-six tests. No network. No Wazuh install. No Windows.
+Exit status 0. Forty-three tests. No network. No Wazuh install. No Windows.
 
 ## `xmllint --noout` on each XML file
 
@@ -30,7 +30,7 @@ Each file has a single root (`<Sysmon>`, `<group>`, or `<ossec_config>`).
 
 ## `python3 -m py_compile`
 
-Eight tracked `.py` files. Each command exited 0 with empty stdout and empty stderr.
+Nine tracked `.py` files. Each command exited 0 with empty stdout and empty stderr.
 
 ```
 python3 -m py_compile tests/__init__.py
@@ -40,6 +40,7 @@ python3 -m py_compile tests/test_rules.py
 python3 -m py_compile tests/test_simulator.py
 python3 -m py_compile tests/test_atomic_map.py
 python3 -m py_compile tests/test_docs.py
+python3 -m py_compile tests/test_sysmon.py
 python3 -m py_compile simulator/encrypt_sim.py
 ```
 
@@ -55,8 +56,9 @@ A live Ubuntu 22.04 all-in-one manager plus four Windows agents would still need
 6. Pasting the four eventchannel `<localfile>` blocks from `wazuh/agent/ossec.conf.snippet.xml` delivers Sysmon/Operational, PowerShell/Operational, Security, and System events.
 7. `Deploy-Sysmon.ps1 -Verify` on Sysmon 15.x: service Running, config hash printed, `Get-WinEvent -LogName Microsoft-Windows-Sysmon/Operational -MaxEvents 5` returns events.
 8. Active response: `isolate-host.cmd` / `isolate-host.ps1` on the agent, `ar-config.snippet.xml` merged on the manager with a real manager IP and management CIDR, `agent_control -b` creates `RansomwareIsolation` and `C:\ProgramData\ossec-agent\isolation.json`, and `isolate-host.ps1 -Rollback` restores connectivity.
-9. Formative Atomic / simulator runs: 12/12 primary rules fire on live hosts; TC-07 produces zero live alerts (pytest TC-07 is offline only).
+9. Formative Atomic / simulator runs: 12/12 primary rules fire on live hosts; TC-07 produces zero live alerts (pytest TC-07 is offline only). TC-06 run from `C:\Users\labuser\Documents\simulator_sandbox` raises `100121` as well as `100102`.
 10. Summative chain on two hosts (TC-05 → TC-12 → TC-03 → TC-04 → TC-01 → TC-06): isolation within 60 seconds of TC-06, rollback restores connectivity. Bars are in [docs/test-plan.md](docs/test-plan.md).
 11. Alert routing in operations: level ≥ 12 pages; level 10–11 sits on the daily queue; the > 15 alerts/day for a week trigger in [docs/tuning.md](docs/tuning.md) is measured from live `rule.id` counts, not from this file.
+12. Sysmon 15.x accepts the full-path ProcessAccess exclusions (`is` plus the `begin with`/`end with` Defender platform rules), the real `MsMpEng.exe` under `C:\ProgramData\Microsoft\Windows Defender\Platform\<version>\` stays silent, and a copy of `csrss.exe` run from `C:\Users\Public\` against lsass is logged as EID 10. `tests/test_sysmon.py` emulates this offline only.
 
 Nothing in this record claims those eleven items were executed.

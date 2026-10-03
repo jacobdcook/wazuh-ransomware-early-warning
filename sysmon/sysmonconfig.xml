@@ -123,14 +123,23 @@
       </ProcessAccess>
     </RuleGroup>
     <RuleGroup name="ProcessAccess exclude" groupRelation="or">
+      <!-- Full image paths only. A name-only match would let any renamed csrss.exe or MsMpEng.exe open lsass unlogged. -->
       <ProcessAccess onmatch="exclude">
-        <SourceImage condition="end with">\Sysmon.exe</SourceImage>
-        <SourceImage condition="end with">\Sysmon64.exe</SourceImage>
-        <SourceImage condition="end with">\MsMpEng.exe</SourceImage>
-        <SourceImage condition="end with">\NisSrv.exe</SourceImage>
-        <SourceImage condition="end with">\MsSense.exe</SourceImage>
-        <SourceImage condition="end with">\csrss.exe</SourceImage>
-        <SourceImage condition="end with">\wininit.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\Sysmon.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\Sysmon64.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\csrss.exe</SourceImage>
+        <SourceImage condition="is">C:\Windows\System32\wininit.exe</SourceImage>
+        <SourceImage condition="is">C:\Program Files\Windows Defender\MsMpEng.exe</SourceImage>
+        <SourceImage condition="is">C:\Program Files\Windows Defender\NisSrv.exe</SourceImage>
+        <SourceImage condition="is">C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe</SourceImage>
+        <Rule name="Defender platform MsMpEng" groupRelation="and">
+          <SourceImage condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</SourceImage>
+          <SourceImage condition="end with">\MsMpEng.exe</SourceImage>
+        </Rule>
+        <Rule name="Defender platform NisSrv" groupRelation="and">
+          <SourceImage condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</SourceImage>
+          <SourceImage condition="end with">\NisSrv.exe</SourceImage>
+        </Rule>
         <GrantedAccess condition="is">0x1400</GrantedAccess>
       </ProcessAccess>
     </RuleGroup>
