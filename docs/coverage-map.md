@@ -56,7 +56,7 @@ Confirm every parent ID with `/var/ossec/bin/wazuh-logtest` on the Wazuh version
 
 ## What each rule misses
 
-- **100100** misses direct-syscall dumpers and `MiniDumpWriteDump` called from a trusted signed process. Access masks outside `0x1010` / `0x1038` / `0x1fffff` / `0x143a` (including some `PROCESS_QUERY_INFORMATION`-only opens) also slip through.
+- **100100** misses `MiniDumpWriteDump` called from a trusted signed process. Direct-syscall dumpers still raise Sysmon Event ID 10, so they are only missed when their access mask falls outside the set below. Access masks outside `0x1010` / `0x1038` / `0x1fffff` / `0x143a` (including some `PROCESS_QUERY_INFORMATION`-only opens) also slip through.
 - **100101** (and sibling **100122** on 4104) miss renamed copies of `vssadmin`/`wmic`, `diskshadow.exe`, and compiled WMI callers that never log the watched cmdlet strings or `Delete()`. Query-only `Get-WmiObject Win32_ShadowCopy` without `Remove-*`/`Delete()` is out of scope on purpose.
 - **100102** misses encryption that keeps original filenames and extensions. Notes written under custom names (`.html`, `.hta`, operator-chosen filenames) that are not in the list will not fire.
 - **100103** ignores loopback `IpAddress` on purpose. It does not see IPC$-only traffic, 5145-only share access, or admin-share use that never logs 5140 under the host's audit policy.
