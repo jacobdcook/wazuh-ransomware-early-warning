@@ -2,7 +2,7 @@
 
 Riverbend Managed IT Services, the hostnames in this repo, and every account name used in samples are fictitious. This is a detection-engineering lab for a WGU MS Cybersecurity capstone. Counts and timings come from an isolated lab against Atomic Red Team cases and the bundled simulator. Nothing here was measured on a production network.
 
-[![tests](https://github.com/jacobdcook/wazuh-ransomware-early-warning/actions/workflows/tests.yml/badge.svg)](https://github.com/jacobdcook/wazuh-ransomware-early-warning/actions/workflows/tests.yml) pytest 43 passed · 12 rules · MIT
+[![tests](https://github.com/jacobdcook/wazuh-ransomware-early-warning/actions/workflows/tests.yml/badge.svg)](https://github.com/jacobdcook/wazuh-ransomware-early-warning/actions/workflows/tests.yml) pytest 58 passed · 12 rules · MIT
 
 This pack is a Wazuh 4.x plus Sysmon early-warning set for a small Windows fleet. It pages on ransomware precursors (LSASS access, shadow-copy deletion, admin-share hops, encryption artifacts) rather than after the fleet is already locked. Tests are offline pytest against synthetic decoded events. They do not need a Wazuh install, Windows, or a network.
 
@@ -48,7 +48,7 @@ python3 simulator/encrypt_sim.py --target ./simulator_sandbox --files 20
 python3 simulator/encrypt_sim.py --target ./simulator_sandbox --rollback
 ```
 
-Expect `43 passed` from `pytest -q` (see [VERIFICATION.md](VERIFICATION.md)). The simulator only writes under an empty directory or a prior simulator workspace. It refuses `.git`, `C:\Windows`, filesystem root, and the home root. `--rollback` restores the `.txt` files and removes `RANSOM_NOTE.txt` plus `*.locked`.
+Expect `58 passed` from `pytest -q` (see [VERIFICATION.md](VERIFICATION.md)). The simulator only writes under an empty directory or a prior simulator workspace. It refuses `.git`, `C:\Windows`, filesystem root, and the home root. `--rollback` restores the `.txt` files and removes `RANSOM_NOTE.txt` plus `*.locked`.
 
 ## Layout
 

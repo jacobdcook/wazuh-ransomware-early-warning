@@ -94,15 +94,27 @@
       </ImageLoad>
     </RuleGroup>
     <RuleGroup name="ImageLoad exclude" groupRelation="or">
+      <!-- Full image paths only. A name-only match would let a renamed MsMpEng.exe in \Temp\ load DLLs unlogged. -->
       <ImageLoad onmatch="exclude">
-        <Image condition="end with">\Sysmon.exe</Image>
-        <Image condition="end with">\Sysmon64.exe</Image>
-        <Image condition="end with">\MsMpEng.exe</Image>
-        <Image condition="end with">\NisSrv.exe</Image>
-        <Image condition="end with">\MsSense.exe</Image>
-        <Image condition="end with">\wuauclt.exe</Image>
-        <Image condition="end with">\UsoClient.exe</Image>
-        <Image condition="end with">\TiWorker.exe</Image>
+        <Image condition="is">C:\Windows\Sysmon.exe</Image>
+        <Image condition="is">C:\Windows\Sysmon64.exe</Image>
+        <Image condition="is">C:\Program Files\Windows Defender\MsMpEng.exe</Image>
+        <Image condition="is">C:\Program Files\Windows Defender\NisSrv.exe</Image>
+        <Image condition="is">C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe</Image>
+        <Image condition="is">C:\Windows\System32\wuauclt.exe</Image>
+        <Image condition="is">C:\Windows\System32\UsoClient.exe</Image>
+        <Rule name="Defender platform MsMpEng" groupRelation="and">
+          <Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image>
+          <Image condition="end with">\MsMpEng.exe</Image>
+        </Rule>
+        <Rule name="Defender platform NisSrv" groupRelation="and">
+          <Image condition="begin with">C:\ProgramData\Microsoft\Windows Defender\Platform\</Image>
+          <Image condition="end with">\NisSrv.exe</Image>
+        </Rule>
+        <Rule name="Servicing stack TiWorker" groupRelation="and">
+          <Image condition="begin with">C:\Windows\WinSxS\</Image>
+          <Image condition="end with">\TiWorker.exe</Image>
+        </Rule>
       </ImageLoad>
     </RuleGroup>
 
