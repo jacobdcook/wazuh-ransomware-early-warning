@@ -8,7 +8,7 @@ Why each EID:
 EID 1: command lines for vssadmin/wmic shadow wipe, schtasks, Defender tamper, wevtutil, encoded PowerShell, and download cradles.
 EID 3: egress from script hosts and user-writable paths. Baseline only; no primary rule keys off it yet.
 EID 7: DLL loads into lsass.exe and loads from Temp, Users, or AppData.
-EID 10: process opens of lsass.exe and NTDS with dump-style GrantedAccess.
+EID 10: process opens of lsass.exe and NTDS with dump-style GrantedAccess. Exclusions (csrss, wininit, Defender, Sysmon) match full image paths, never the file name alone, so a renamed tool in another folder is still logged. Defender's MsMpEng.exe and NisSrv.exe move with each platform update, so they match `C:\ProgramData\Microsoft\Windows Defender\Platform\` plus the file name.
 EID 11: ransom-note names, .locked/.encrypted/.crypt/.enc, user document writes, VSS and ntds.dit copies.
 EID 12: registry key create/delete on Run, RunOnce, and Defender policy objects.
 EID 13: registry value set on Run/RunOnce and Defender disable values.

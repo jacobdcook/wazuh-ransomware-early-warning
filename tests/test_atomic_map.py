@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import yaml
@@ -68,3 +69,21 @@ def test_tc07_expects_empty_list():
     tc07 = by_id["TC-07"]
     assert tc07["expected_rule_ids"] == []
     assert tc07["expected_level"] == 0
+
+
+def test_tc06_simulator_target_is_watched_by_burst_rule(rules):
+    by_id = {data["id"]: data for _, data in _load_cases()}
+    tc06 = by_id["TC-06"]
+    assert 100121 in tc06["expected_rule_ids"]
+    targets = {
+        re.search(r"--target\s+(\S+)", tc06[key]).group(1)
+        for key in ("command", "cleanup")
+    }
+    assert len(targets) == 1
+    target = targets.pop()
+    support = next(r for r in rules if r.id == 100120)
+    pattern = dict(support.fields)["win.eventdata.targetFilename"]
+    for name in ("file_0000.txt", r".sim_backup\file_0000.txt"):
+        assert re.search(pattern, rf"{target}\{name}"), f"100120 misses {target}"
+    readme = (Path(__file__).parents[1] / "simulator" / "README.md").read_text()
+    assert f"--target {target} " in readme

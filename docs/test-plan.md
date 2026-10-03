@@ -13,7 +13,7 @@ Run on one Windows lab host that already has this repo's Sysmon baseline and Waz
 | TC-03 | Atomic `T1003.001` test 1 (ProcDump `-ma lsass.exe`) | 100100 (level 14) | `tests/sample_events/TC-03/` |
 | TC-04 | Atomic `T1021.002` test 1 plus `T1569.002` test 2 (`psexec.exe \\SRV-FILE-01 -accepteula cmd`) | 100103 and 100104 (level 12) | `tests/sample_events/TC-04/` |
 | TC-05 | Atomic `T1059.001` test 15 (`powershell.exe -EncodedCommand …`) | 100110 (level 10) | `tests/sample_events/TC-05/` |
-| TC-06 | custom simulator (`python encrypt_sim.py --target C:\lab\simulator_sandbox --files 50`) | 100102 (level 15). Burst may also raise 100121 | `tests/sample_events/TC-06/` |
+| TC-06 | custom simulator (`python encrypt_sim.py --target C:\Users\labuser\Documents\simulator_sandbox --files 50`) | 100102 and burst 100121 (level 15). Target must stay under a local `Documents` folder or 100121 cannot fire | `tests/sample_events/TC-06/` |
 | TC-07 | Benign set (start with `vssadmin.exe list shadows`) | none (`expected_rule_ids: []`) | `tests/sample_events/TC-07/` (≥ 10 events, zero alerts) |
 | TC-08 | Atomic `T1547.001` test 1 with a `\Users\` Temp payload | 100105 (level 12) | `tests/sample_events/TC-08/` |
 | TC-09 | Atomic `T1053.005` test 1 / lab `schtasks /create /sc` + `\Users\` | 100106 (level 12) | `tests/sample_events/TC-09/` |
