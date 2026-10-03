@@ -1,4 +1,4 @@
-"""Emulate Sysmon ProcessAccess filtering for the LSASS exclusions."""
+"""Emulate Sysmon ProcessAccess and ImageLoad filtering for the exclusion lists."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -16,9 +16,9 @@ CONDITIONS = {
 LSASS = r"C:\Windows\system32\lsass.exe"
 
 
-def _section(onmatch: str) -> ET.Element:
+def _section(onmatch: str, event_type: str = "ProcessAccess") -> ET.Element:
     root = ET.parse(SYSMON_XML).getroot()
-    return root.find(f".//ProcessAccess[@onmatch='{onmatch}']")
+    return root.find(f".//{event_type}[@onmatch='{onmatch}']")
 
 
 def _field_hits(el: ET.Element, event: dict) -> bool:
@@ -90,4 +90,56 @@ def test_no_name_only_source_image_exclusion():
         if child.tag == "Rule":
             assert child.get("groupRelation") == "and"
             conds = {f.get("condition") for f in child if f.tag == "SourceImage"}
+            assert "begin with" in conds, child.get("name")
+
+
+def image_load_logged(image: str, image_loaded: str) -> bool:
+    event = {"Image": image, "ImageLoaded": image_loaded}
+    return _section_hits(_section("include", "ImageLoad"), event) and not _section_hits(
+        _section("exclude", "ImageLoad"), event
+    )
+
+
+USER_DLL = r"C:\Users\jdoe\AppData\Local\Temp\payload.dll"
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        r"C:\Windows\Sysmon64.exe",
+        r"C:\Program Files\Windows Defender\MsMpEng.exe",
+        r"C:\ProgramData\Microsoft\Windows Defender\Platform\4.18.24090.11-0\MsMpEng.exe",
+        r"C:\Program Files\Windows Defender Advanced Threat Protection\MsSense.exe",
+        r"C:\Windows\system32\wuauclt.exe",
+        r"C:\Windows\System32\UsoClient.exe",
+        r"C:\Windows\WinSxS\amd64_microsoft-windows-servicingstack_31bf3856ad364e35_10.0.19041.4585_none_7e5bd4ef4ef10b48\TiWorker.exe",
+    ],
+)
+def test_image_load_real_binaries_are_excluded(image):
+    assert not image_load_logged(image, USER_DLL)
+
+
+@pytest.mark.parametrize(
+    "image",
+    [
+        r"C:\Users\jdoe\AppData\Local\Temp\MsMpEng.exe",
+        r"C:\ProgramData\MsMpEng.exe",
+        r"C:\Users\Public\TiWorker.exe",
+        r"C:\Windows\Temp\wuauclt.exe",
+        r"C:\Users\jdoe\Downloads\Sysmon64.exe",
+        r"C:\Users\jdoe\Desktop\UsoClient.exe",
+        r"C:\Program Files\Windows Defender\Evil\NisSrv.exe",
+    ],
+)
+def test_image_load_spoofed_names_are_logged(image):
+    assert image_load_logged(image, USER_DLL)
+
+
+def test_no_name_only_image_load_exclusion():
+    for child in _section("exclude", "ImageLoad"):
+        if child.tag == "Image":
+            assert child.get("condition") == "is", child.text
+        if child.tag == "Rule":
+            assert child.get("groupRelation") == "and"
+            conds = {f.get("condition") for f in child if f.tag == "Image"}
             assert "begin with" in conds, child.get("name")

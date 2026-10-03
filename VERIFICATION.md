@@ -9,11 +9,11 @@ Commands below ran in this git checkout on a Linux workstation. They did not run
 Working directory: repository root. Command: `python3 -m pytest -q`.
 
 ```
-...........................................                              [100%]
-43 passed in 0.11s
+..........................................................               [100%]
+58 passed in 0.12s
 ```
 
-Exit status 0. Forty-three tests. No network. No Wazuh install. No Windows.
+Exit status 0. Fifty-eight tests. No network. No Wazuh install. No Windows.
 
 ## `xmllint --noout` on each XML file
 
@@ -59,6 +59,6 @@ A live Ubuntu 22.04 all-in-one manager plus four Windows agents would still need
 9. Formative Atomic / simulator runs: 12/12 primary rules fire on live hosts; TC-07 produces zero live alerts (pytest TC-07 is offline only). TC-06 run from `C:\Users\labuser\Documents\simulator_sandbox` raises `100121` as well as `100102`.
 10. Summative chain on two hosts (TC-05 → TC-12 → TC-03 → TC-04 → TC-01 → TC-06): isolation within 60 seconds of TC-06, rollback restores connectivity. Bars are in [docs/test-plan.md](docs/test-plan.md).
 11. Alert routing in operations: level ≥ 12 pages; level 10–11 sits on the daily queue; the > 15 alerts/day for a week trigger in [docs/tuning.md](docs/tuning.md) is measured from live `rule.id` counts, not from this file.
-12. Sysmon 15.x accepts the full-path ProcessAccess exclusions (`is` plus the `begin with`/`end with` Defender platform rules), the real `MsMpEng.exe` under `C:\ProgramData\Microsoft\Windows Defender\Platform\<version>\` stays silent, and a copy of `csrss.exe` run from `C:\Users\Public\` against lsass is logged as EID 10. `tests/test_sysmon.py` emulates this offline only.
+12. Sysmon 15.x accepts the full-path ProcessAccess exclusions (`is` plus the `begin with`/`end with` Defender platform rules), the real `MsMpEng.exe` under `C:\ProgramData\Microsoft\Windows Defender\Platform\<version>\` stays silent, and a copy of `csrss.exe` run from `C:\Users\Public\` against lsass is logged as EID 10. The same holds for the full-path ImageLoad exclusions: a copy of `MsMpEng.exe` run from `\Temp\` that loads a DLL from a user path is logged as EID 7. `tests/test_sysmon.py` emulates this offline only.
 
 Nothing in this record claims those twelve items were executed.
