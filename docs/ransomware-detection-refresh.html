@@ -185,7 +185,7 @@ footer {
 <tbody>
 <tr><td>Initial access</td><td>100111, 100110</td><td>VPN/Citrix logon, MFA absence, phishing mail, trusted RMM push</td></tr>
 <tr><td>Precursor tooling</td><td>100108, 100109, 100105, 100106, 100107</td><td>GPO Defender tamper, unsigned-API tasking, LOLBin services under System32</td></tr>
-<tr><td>Credential theft</td><td>100100</td><td>Direct syscalls, MiniDump from a trusted signed process, other access masks</td></tr>
+<tr><td>Credential theft</td><td>100100</td><td>MiniDump from a trusted signed process, other access masks</td></tr>
 <tr><td>Lateral movement</td><td>100103, 100104</td><td>IPC$ only, Impacket without PSEXESVC, renamed service names</td></tr>
 <tr><td>Shadow copy deletion</td><td>100101 (+100122)</td><td><code>diskshadow.exe</code>, renamed vssadmin, compiled WMI with no cmdlet strings</td></tr>
 <tr><td>Encryption</td><td>100102, 100121</td><td>In-place encrypt that keeps original names and stays under the burst threshold</td></tr>
@@ -246,7 +246,7 @@ footer {
 <article class="card sev1" id="r-100100">
 <h3>100100 · T1003.001 · LSASS memory access · SEV-1 · level 14</h3>
 <p><strong>Catches.</strong> Sysmon EID 10 (parent 61612) when <code>TargetImage</code> is <code>lsass.exe</code> and <code>GrantedAccess</code> is a dump-capable mask (<code>0x1010</code>, <code>0x1038</code>, <code>0x1fffff</code>, <code>0x143a</code>). TC-03: procdump-style and full-access samples.</p>
-<p><strong>Misses.</strong> Direct-syscall dumpers; <code>MiniDumpWriteDump</code> from a trusted signed process; other masks (including some query-only opens).</p>
+<p><strong>Misses.</strong> <code>MiniDumpWriteDump</code> from a trusted signed process; other masks (including some query-only opens).</p>
 <p><strong>False positives / TC-07.</strong> Defender <code>MsMpEng.exe</code> opening LSASS with <code>0x1400</code> (<code>defender_lsass.json</code>). That mask is not in the allow-list of dump masks, so the rule stays quiet without an exclusion on the Defender path.</p>
 </article>
 
@@ -356,7 +356,7 @@ footer {
 
 <details>
 <summary>3. Name one LSASS access that is supposed to be silent.</summary>
-<p>Defender <code>MsMpEng.exe</code> with <code>GrantedAccess</code> <code>0x1400</code>. Dump masks in 100100 are a tight set. Direct syscalls are a miss, not a TC-07 case.</p>
+<p>Defender <code>MsMpEng.exe</code> with <code>GrantedAccess</code> <code>0x1400</code>. Dump masks in 100100 are a tight set. Direct syscalls still produce Event ID 10; they only miss when the mask is outside the set.</p>
 </details>
 
 <details>
