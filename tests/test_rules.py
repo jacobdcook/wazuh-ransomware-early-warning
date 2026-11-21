@@ -193,3 +193,15 @@ def test_tc01_v3_powershell_wmi_missed_by_legacy_regex(rules, sample_events_by_t
         expected = event.get("expect", {}).get("rule_id")
         assert hit.id == expected
         assert match(current, event) or match(sibling, event)
+
+
+def test_100106_cmdline_regex_is_linear_on_adversarial_input(rules):
+    import time
+
+    pattern = re.compile(dict(next(r for r in rules if r.id == 100106).fields)["win.eventdata.commandLine"])
+    flood = "cmd.exe /c rem " + "schtasks/create " * 1000
+    start = time.perf_counter()
+    assert pattern.search(flood) is None
+    assert time.perf_counter() - start < 0.5
+    real = 'schtasks /create /sc onlogon /tr "powershell -w hidden -f C:\\Users\\Public\\a.ps1" ' + "/create " * 2000
+    assert pattern.search(real) is not None

@@ -27,12 +27,12 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 $GroupName = 'RansomwareIsolation'
-$MarkerPath = 'C:\ProgramData\ossec-agent\isolation.json'
 $AgentRoot = Join-Path ${env:ProgramFiles(x86)} 'ossec-agent'
 if (-not (Test-Path -LiteralPath $AgentRoot)) {
     $AgentRoot = 'C:\Program Files (x86)\ossec-agent'
 }
 $ArLogPath = Join-Path $AgentRoot 'active-response\active-responses.log'
+$MarkerPath = Join-Path $AgentRoot 'active-response\isolation.json'
 
 function Write-ArLog {
     param([string]$Message)
