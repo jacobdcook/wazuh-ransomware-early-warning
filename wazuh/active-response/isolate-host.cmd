@@ -23,7 +23,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -Command ^
   "    foreach ($x in @($j.parameters.extra_args)) { if ($null -ne $x -and [string]$x -ne '') { $invoke.Add([string]$x) } }" ^
   "  }" ^
   "}" ^
-  "& $ps1Path @($invoke.ToArray());" ^
-  "if (-not $?) { exit 1 }; exit 0"
+  "& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $ps1Path $invoke.ToArray();" ^
+  "if ($LASTEXITCODE -ne 0) { exit 1 }; exit 0"
 
 exit /b %ERRORLEVEL%
