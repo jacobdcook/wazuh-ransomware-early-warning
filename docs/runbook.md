@@ -57,7 +57,7 @@ rule.groups:ransomware AND data.win.system.computer:WS-FIN-02 AND rule.level:15
 
 Rule IDs that drive isolation: `100102` (ransom note / `.locked` write, Sysmon EID 11) and `100121` (30 user-document writes in 60 seconds). AR config: [../wazuh/active-response/ar-config.snippet.xml](../wazuh/active-response/ar-config.snippet.xml). Procedure: [../wazuh/active-response/README.md](../wazuh/active-response/README.md).
 
-1. `[Operations Manager]` checks whether `C:\ProgramData\ossec-agent\isolation.json` already exists on the alerting agent (AR may have fired). If yes, skip to step 3. If no, and `100102` or `100121` is confirmed, authorize a manual isolate.
+1. `[Operations Manager]` checks whether `C:\Program Files (x86)\ossec-agent\active-response\isolation.json` already exists on the alerting agent (AR may have fired). If yes, skip to step 3. If no, and `100102` or `100121` is confirmed, authorize a manual isolate.
 2. `[On-call Analyst]` on the manager (lab VM with console access to the agent): `/var/ossec/bin/agent_control -L` then `/var/ossec/bin/agent_control -b AGENT_IP -f isolate-host0`. Confirm manager IPv4 still has TCP 1514/1515 and the management CIDR still has inbound 3389/5985.
 3. On the agent, confirm firewall group `RansomwareIsolation` and the marker file. Isolation is host-wide block with those two holes only. It does not kill processes and it does not stop encryption already in flight.
 4. Do not isolate `SRV-DC-01` or the only jump box without `[Owner]` plus hypervisor console. Wrong `ManagerIp` / `MgmtCidr` strands the host.

@@ -70,4 +70,4 @@ Samples: [../tests/sample_events/TC-07/](../tests/sample_events/TC-07/).
 powershell.exe -ExecutionPolicy Bypass -File "C:\Program Files (x86)\ossec-agent\active-response\bin\isolate-host.ps1" -Rollback
 ```
 
-Manual isolate (manager): `/var/ossec/bin/agent_control -b AGENT_IP -f isolate-host0`. Group `RansomwareIsolation`. Marker `C:\ProgramData\ossec-agent\isolation.json`.
+Manual isolate (manager): `/var/ossec/bin/agent_control -b AGENT_IP -f isolate-host0`. Group `RansomwareIsolation`. Marker `C:\Program Files (x86)\ossec-agent\active-response\isolation.json`.
