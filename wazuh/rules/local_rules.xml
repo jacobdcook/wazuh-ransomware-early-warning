@@ -92,7 +92,7 @@
   <!-- Misses: Task Scheduler COM API or Register-ScheduledTask when the command line has no schtasks /create /sc; signed actions under Program Files -->
   <rule id="100106" level="12">
     <if_sid>60100,61603</if_sid>
-    <field name="win.eventdata.commandLine" type="pcre2">(?i)schtasks(?:\.exe)?\b.*\/create\b(?=.*\/sc\b)(?=.*(?:\\Users\\|powershell|pwsh|wscript|cscript|mshta|cmd\.exe))</field>
+    <field name="win.eventdata.commandLine" type="pcre2">(?im)^(?>.*?schtasks(?:\.exe)?\b)(?>.*?\/create\b)(?=.*\/sc\b)(?=.*(?:\\Users\\|powershell|pwsh|wscript|cscript|mshta|cmd\.exe))</field>
     <description>Scheduled task creation (T1053.005 Scheduled Task/Job: Scheduled Task)</description>
     <mitre>
       <id>T1053.005</id>

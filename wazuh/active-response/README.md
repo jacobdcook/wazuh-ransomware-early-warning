@@ -24,7 +24,7 @@ Creates the named firewall group `RansomwareIsolation`. Existing enabled rules a
 - Wazuh manager IP, TCP 1514 (events) and 1515 (enrollment), inbound and outbound
 - Management CIDR, inbound TCP 3389 and 5985
 
-Writes `C:\ProgramData\ossec-agent\isolation.json` with UTC timestamp and triggering rule id. Logs to `C:\Program Files (x86)\ossec-agent\active-response\active-responses.log`.
+Writes `C:\Program Files (x86)\ossec-agent\active-response\isolation.json` with UTC timestamp and triggering rule id. The marker lives in the agent install directory because only SYSTEM and Administrators can write there; a marker any user can create would let malware suppress isolation. Logs to `C:\Program Files (x86)\ossec-agent\active-response\active-responses.log`.
 
 ## Test with agent_control -b
 

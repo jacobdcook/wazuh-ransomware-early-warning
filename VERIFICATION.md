@@ -1,6 +1,6 @@
 # Verification record
 
-Date: 2026-10-02 (UTC timestamp from this run: `Sat Oct  3 12:52:13 AM UTC 2026`).
+Date: 2026-11-12 (UTC timestamp from this run: `Thu Nov 12 11:33:29 PM UTC 2026`).
 
 Commands below ran in this git checkout on a Linux workstation. They did not run on a Wazuh manager, a Windows agent, or Sysmon. Deployment steps in [docs/install-guide.md](docs/install-guide.md) are procedure only.
 
@@ -9,11 +9,11 @@ Commands below ran in this git checkout on a Linux workstation. They did not run
 Working directory: repository root. Command: `python3 -m pytest -q`.
 
 ```
-..........................................................               [100%]
-58 passed in 0.12s
+...........................................................              [100%]
+59 passed in 0.09s
 ```
 
-Exit status 0. Fifty-eight tests. No network. No Wazuh install. No Windows.
+Exit status 0. Fifty-nine tests. No network. No Wazuh install. No Windows.
 
 ## `xmllint --noout` on each XML file
 
@@ -55,7 +55,7 @@ A live Ubuntu 22.04 all-in-one manager plus four Windows agents would still need
 5. Agent MSI install with `WAZUH_MANAGER` (and the `agent-auth` fallback) shows `WS-FIN-02`, `WS-OPS-07`, `SRV-FILE-01`, `SRV-DC-01` as Active.
 6. Pasting the four eventchannel `<localfile>` blocks from `wazuh/agent/ossec.conf.snippet.xml` delivers Sysmon/Operational, PowerShell/Operational, Security, and System events.
 7. `Deploy-Sysmon.ps1 -Verify` on Sysmon 15.x: service Running, config hash printed, `Get-WinEvent -LogName Microsoft-Windows-Sysmon/Operational -MaxEvents 5` returns events.
-8. Active response: `isolate-host.cmd` / `isolate-host.ps1` on the agent, `ar-config.snippet.xml` merged on the manager with a real manager IP and management CIDR, `agent_control -b` creates `RansomwareIsolation` and `C:\ProgramData\ossec-agent\isolation.json`, and `isolate-host.ps1 -Rollback` restores connectivity.
+8. Active response: `isolate-host.cmd` / `isolate-host.ps1` on the agent, `ar-config.snippet.xml` merged on the manager with a real manager IP and management CIDR, `agent_control -b` creates `RansomwareIsolation` and `C:\Program Files (x86)\ossec-agent\active-response\isolation.json`, and `isolate-host.ps1 -Rollback` restores connectivity.
 9. Formative Atomic / simulator runs: 12/12 primary rules fire on live hosts; TC-07 produces zero live alerts (pytest TC-07 is offline only). TC-06 run from `C:\Users\labuser\Documents\simulator_sandbox` raises `100121` as well as `100102`.
 10. Summative chain on two hosts (TC-05 → TC-12 → TC-03 → TC-04 → TC-01 → TC-06): isolation within 60 seconds of TC-06, rollback restores connectivity. Bars are in [docs/test-plan.md](docs/test-plan.md).
 11. Alert routing in operations: level ≥ 12 pages; level 10–11 sits on the daily queue; the > 15 alerts/day for a week trigger in [docs/tuning.md](docs/tuning.md) is measured from live `rule.id` counts, not from this file.

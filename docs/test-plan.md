@@ -46,7 +46,7 @@ After the chain, run the TC-07 set on both hosts. Those commands must add zero n
 
 - **12/12 primary rules fire.** Across formative Atomic/simulator runs plus pytest samples, IDs 100100–100111 each appear at least once. Support IDs 100120–100122 do not count toward this bar.
 - **TC-07 = 0.** No primary (or support) rule matches the benign set. Pytest `test_tc07_zero_alerts` is the offline proof; the live hosts are the deployed proof.
-- **Isolation within 60 s of TC-06.** Time from the first Sysmon EID 11 for `RANSOM_NOTE.txt` or `*.locked` on `WS-FIN-02` to `C:\ProgramData\ossec-agent\isolation.json` existing and firewall group `RansomwareIsolation` present. Budget is 60 seconds (agent buffer + AR).
+- **Isolation within 60 s of TC-06.** Time from the first Sysmon EID 11 for `RANSOM_NOTE.txt` or `*.locked` on `WS-FIN-02` to `C:\Program Files (x86)\ossec-agent\active-response\isolation.json` existing and firewall group `RansomwareIsolation` present. Budget is 60 seconds (agent buffer + AR).
 - **Rollback restores connectivity.** On the isolated host, elevated: `powershell.exe -ExecutionPolicy Bypass -File "C:\Program Files (x86)\ossec-agent\active-response\bin\isolate-host.ps1" -Rollback`. Then ping a non-manager address, RDP or WinRM from the management CIDR, and confirm `isolation.json` is gone. Simulator `--rollback` restores files; it does not restore the firewall.
 
 Fail the run if any bar is missed. Do not tune a rule to silence a true positive from this chain. If TC-07 fires, that is a false positive: record the event, then fix via `docs/tuning.md` and a new TC-07 sample (later tasks).
